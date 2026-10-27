@@ -1,22 +1,61 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Prototyp: każdy może czytać treści lokalne dostarczone z aplikacją.
-    // Użytkownik zapisuje wyłącznie WŁASNY progres (anonimowy Firebase Auth).
-    // UWAGA: przy rankingach i online multiplayer wynik NIE może być
-    // zatwierdzany na podstawie danych z klienta. Dodamy Cloud Functions.
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function registeredOwner(uid) {
+      return isOwner(uid)
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    // This prototype allows self-reported SOLO statistics only.
+    // Never use these fields as authoritative multiplayer/ranking results.
     match /chronikaProgress/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow create, update: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['stages', 'xp', 'totalStars', 'lastUpdated'])
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['stages','xp','totalStars','lastUpdated'])
         && request.resource.data.stages is map
-        && request.resource.data.xp is int
-        && request.resource.data.xp >= 0
-        && request.resource.data.totalStars is int
-        && request.resource.data.totalStars >= 0;
+        && request.resource.data.xp is int && request.resource.data.xp >= 0
+        && request.resource.data.totalStars is int && request.resource.data.totalStars >= 0
+        && request.resource.data.lastUpdated is int;
       allow delete: if false;
     }
-    match /{document=**} { allow read, write: if false; }
+    match /chronikaStats/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly([
+          'totalRuns','campaignRuns','quickRuns','correctAnswers',
+          'totalAnswers','totalTimeSeconds','categories','modes',
+          'recentRuns','lastPlayedAt'
+        ])
+        && request.resource.data.totalRuns is int
+        && request.resource.data.totalRuns >= 0
+        && request.resource.data.campaignRuns is int
+        && request.resource.data.quickRuns is int
+        && request.resource.data.correctAnswers is int
+        && request.resource.data.totalAnswers is int
+        && request.resource.data.totalTimeSeconds is int
+        && request.resource.data.categories is map
+        && request.resource.data.modes is map
+        && request.resource.data.recentRuns is list
+        && request.resource.data.recentRuns.size() <= 8
+        && request.resource.data.lastPlayedAt is int;
+      allow delete: if false;
+    }
+    match /chronikaProfiles/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if registeredOwner(userId)
+        && request.resource.data.keys().hasOnly(['displayName','createdAt','updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 2
+        && request.resource.data.displayName.size() <= 24
+        && request.resource.data.updatedAt is int
+        && (!('createdAt' in request.resource.data)
+            || request.resource.data.createdAt is int);
+      allow delete: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }

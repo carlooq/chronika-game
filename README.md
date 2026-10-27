@@ -1,4 +1,4 @@
-# CHRONIKA — roboczy tytuł nowej gry (MVP 0.1)
+# CHRONIKA — gra o czasie (MVP 0.2)
 
 **Osobny projekt**, niezależny od HITSTERIADY. Pierwsza grywalna wersja dla 1 gracza, gotowa do hostowania na Vercel i połączenia z *nowym* projektem Firebase. Nazwa i grafika są robocze.
 
@@ -9,10 +9,14 @@
 - **12 etapów** w czterech tematach: kino, historia Polski, sport, popkultura; 3 poziomy na każdy rozdział.
 - Odblokowywanie etapów po kolei. Gwiazdki 0–3 według trafności, 20 XP za *nową* gwiazdkę, brak podwójnego naliczania po ponownej grze.
 - **66** przykładowych kart z datami i podpowiedziami. Mała próbna baza jest w pliku `src/data.js`.
-- Progres lokalny w `localStorage` i opcjonalna synchronizacja Firestore poprzez **anonimowe logowanie Firebase** po skonfigurowaniu projektu.
+- Rejestracja i logowanie przez **Firebase Authentication (Email/Password)**, przypomnienie hasła, wylogowanie, edycja nicku. Można też grać jako gość.
+- Profil z gwiazdkami, XP, postępem rozdziałów, sesjami, skutecznością, czasem gry, kategoriami, trybami i historią ostatnich 8 gier.
+- Zapis Firestore w osobnych dokumentach: `chronikaProgress/{uid}`, `chronikaStats/{uid}`, `chronikaProfiles/{uid}`.
+- Lokalne kopie danych są przypisane do konkretnego UID; stare wyniki z wersji 0.1 migrują tylko raz. Rejestracja z konta gościa **zachowuje jego UID** i postęp.
+- Synchronizacja konta między urządzeniami. Logowanie na inne istniejące konto nie łączy automatycznie postępów obcych graczy.
 - Podstawowe testy silnika: `npm test`.
 
-**Jeszcze NIE działa:** 1 na 1 online, turnieje, ranking globalny, prawdziwe konta ze wspólnym dostępem z wielu urządzeń, obszerna baza treści, backend chroniący przed fałszowaniem wyników. „Arena” wyświetla plan, nie symuluje rywalizacji.
+**Jeszcze NIE działa:** 1 na 1 online, turnieje, ranking globalny, obszerna baza treści, backend chroniący przed fałszowaniem wyników. „Arena” wyświetla plan, nie symuluje rywalizacji. Statystyki w MVP są danymi deklarowanymi przez klienta — **nie wolno używać ich do nagród i rankingów multiplayer**.
 
 ## Krok 1 — uruchom lokalnie (Windows)
 
@@ -59,9 +63,9 @@ Zastąp `TWOJ_LOGIN` swoim loginem GitHub. Na GitHubie możesz też użyć „Up
 
 1. **Add project** → np. `chronika-game`.
 2. **Project settings → Your apps → Web app** → utwórz aplikację WWW i skopiuj `firebaseConfig` (6 pól).
-3. **Authentication → Sign-in method** → włącz **Anonymous**.
+3. **Authentication → Sign-in method** → włącz **Anonymous** ORAZ **Email/Password**.
 4. **Firestore Database → Create database** → wybierz region odpowiedni dla graczy (nie zmienisz go później łatwo); uruchom z restrykcyjnymi regułami.
-5. **Firestore Database → Rules** → zastąp reguły kodem z `firestore.rules`, opublikuj je.
+5. **Firestore Database → Rules** → zastąp reguły najnowszym kodem z `firestore.rules`, a następnie kliknij **Publish**. Reguły MVP 0.1 nie wystarczą do zapisu profili i statystyk.
 6. Konfiguracja Firebase jest już wpisana w `scripts/build.mjs`. Nie musisz tworzyć `.env.local` ani dodawać zmiennych w Vercel. W razie zmiany projektu możesz opcjonalnie nadpisać wartości, korzystając ze wzoru `.env.example`:
 
 ```dotenv
@@ -75,7 +79,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456
 
 7. Zatrzymaj i ponownie uruchom `npm run dev`. Status aplikacji powinien pokazać **FIREBASE TEST**. Reguły dają dostęp graczowi wyłącznie do własnego dokumentu `/chronikaProgress/{uid}`.
 
-**Ważne:** anonimowy użytkownik Firebase jest powiązany z przeglądarką, a nie hasłem/e-mailem. Prawdziwe konta i logowanie z kilku urządzeń dodamy w osobnym etapie. Wynik zapisany przez przeglądarkę NIE jest bezpieczną podstawą do rankingu — wyniki 1v1 muszą być sprawdzane po stronie serwera.
+**Ważne:** anonimowe konto gościa jest powiązane z sesją Firebase danej przeglądarki. Rejestracja e-mail+hasło zachowuje jego UID i postęp. Istniejące konto pozwala wejść na różnych urządzeniach. Wyniki zapisane przez klienta NIE są bezpieczną podstawą rankingu — 1v1 będzie weryfikowane po stronie serwera.
 
 ## Krok 4 — Vercel
 
@@ -92,7 +96,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456
 | Etap | Zakres | Status |
 |---|---|---|
 | 0.1 | Tryby solo, 12 etapów, próbne karty i progres | **W paczce** |
-| 0.2 | Konta e-mail / logowanie, profile i chmurowe zapisy | Do zrobienia |
+| 0.2 | Konta e-mail / logowanie, profile i chmurowe zapisy | **W kodzie — wymaga publikacji zaktualizowanych reguł Firestore** |
 | 0.3 | 1v1 online: lobby, parowanie, rundy, wynik po stronie serwera | Do zrobienia |
 | 0.4 | Turnieje, rankingi z ochroną przed oszustwem, osiągnięcia | Do zrobienia |
 | 0.5 | Rozbudowana kampania (rozdziały, misje specjalne, bossowie) | Do zrobienia |
@@ -104,8 +108,9 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456
 - `src/engine.js` — **logika gry**, funkcje niezależne od interfejsu.
 - `src/main.js` — widoki i sterowanie rozgrywką.
 - `src/styles.css` — oprawa graficzna (desktop + mobile).
-- `src/store.js` — localStorage i łączenie progresu.
-- `src/firebase.js` — opcjonalne połączenie do **nowego** Firebase.
+- `src/store.js` — localStorage per UID, jednorazowa migracja 0.1 i łączenie progresu.
+- `src/playerStats.js` — niezależny silnik statystyk gracza (kampania / szybkie gry, tryby, kategorie).
+- `src/firebase.js` — Firebase Auth (gość, email, hasło) i dokumenty progresu, statystyk oraz profilu.
 - `firestore.rules` — restrykcyjne reguły dla demonstracyjnych zapisów.
 - `scripts/build.mjs` — budowanie katalogu `dist`, wstrzykiwanie publicznej konfiguracji Firebase.
 - `tests` — testy silnika.

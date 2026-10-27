@@ -3,3 +3,73 @@
 @media(max-width:1010px){.sidebar{display:none}.hero-art{right:-40px;width:53%;opacity:.58}.hero-copy{max-width:570px}.topbar{padding-left:26px;padding-right:26px}.summary-strip{grid-template-columns:repeat(2,1fr);row-gap:10px}.statline:nth-child(2){border:0}.statline:nth-child(3){border-right:1px solid #283240}.categories-grid{grid-template-columns:repeat(2,1fr)}.bottom-grid{grid-template-columns:1fr 1fr}.game-layout{grid-template-columns:1fr 1.2fr}.mobile-footer{display:flex;position:fixed;z-index:20;bottom:0;left:0;right:0;height:67px;background:#101925ed;backdrop-filter:blur(16px);border-top:1px solid #2a383f;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom)}.mobile-footer .nav-item{width:auto;flex-direction:column;gap:2px;padding:3px 9px;font-size:9px;min-width:60px}.mobile-footer .nav-item.active{background:transparent;border-color:transparent}.mobile-footer .nav-symbol{font-size:20px}.mobile-footer .active-dot{display:none}main{padding-bottom:110px}}
 @media(max-width:720px){.topbar{height:67px;padding:0 17px}.breadcrumb{font-size:9px;letter-spacing:.12em}.top-right{gap:9px}.online-tag{display:none}.top-points{font-size:13px}.top-avatar{width:30px;height:30px}.hero{padding:31px 23px;min-height:411px;align-items:flex-start}.hero h1{font-size:clamp(34px,8.8vw,53px);line-height:1.07;max-width:380px;margin-top:14px;margin-bottom:15px}.hero p{font-size:11px;max-width:310px}.hero-art{top:auto;height:240px;bottom:-65px;right:-84px;width:340px;opacity:.37}.hero-outer-ring{width:275px}.hero-inner-ring{width:190px}.art-center{width:116px;height:116px;font-size:33px}.art-center i{top:56px;left:30px;right:30px}.hero-actions{margin-top:19px;gap:8px}.hero-actions .btn{min-height:39px;padding:9px 10px;font-size:10px;gap:8px}.hero-01{right:16px;bottom:14px}.summary-strip{margin:12px 0 29px;padding:14px 8px;row-gap:15px}.statline{padding:4px 12px}.statline small{font-size:8px}.statline strong{font-size:20px}.section-heading h2{font-size:27px}.categories-grid{gap:10px}.category-card{height:197px}.category-emblem{font-size:49px}.category-bottom strong{font-size:15px}.category-bottom small{font-size:9px}.bottom-grid{grid-template-columns:1fr}.feature-panel{padding:20px}.feature-panel h3{font-size:21px}.page-intro{padding:14px 0 27px}.page-intro h1{font-size:38px}.page-intro p{font-size:12px}.chapter{padding:16px;border-radius:15px}.chapter-intro{gap:11px;margin-bottom:18px}.chapter-num{font-size:40px;min-width:56px}.chapter-copy h2{font-size:18px}.chapter-copy p{font-size:10px}.chapter-progress b{font-size:18px}.chapter-progress small{font-size:8px}.stages{grid-template-columns:1fr;gap:9px}.stage-card{min-height:92px;padding:12px 16px}.stage-top{font-size:10px}.stage-card h3{font-size:15px;margin-top:3px}.stage-card>small{font-size:10px}.stage-footer{padding-top:5px}.stage-card .stars.small{font-size:13px}.setup{padding:17px;gap:24px}.choice-grid,.choice-grid.modes{grid-template-columns:repeat(2,minmax(0,1fr))}.choice{min-height:80px}.mode-choice{min-height:135px}.start-bar{flex-direction:column;align-items:stretch}.start-bar .btn{width:100%}.arena-grid{grid-template-columns:1fr}.game-top{font-size:8px;gap:9px}.game-meter{padding:13px 12px;gap:12px}.game-meter>div:first-child{min-width:52px}.game-meter strong{font-size:19px}.game-score{font-size:19px}.game-score small{font-size:8px}.game-layout{grid-template-columns:1fr;gap:11px}.question-panel{min-height:290px;padding:22px}.question-sub{margin-top:24px}.question-mark{font-size:49px}.question-mark.year{font-size:39px}.question-panel h1{font-size:28px}.question-panel p{font-size:11px}.card-deco{padding-top:23px}.answer-panel{min-height:unset;padding:16px}.answer-head{font-size:9px}.year-answer{min-height:113px;padding:14px}.year-answer strong{font-size:29px}.pair-card{min-height:239px;padding:14px}.pair-card strong{font-size:14px}.pair-icon{font-size:42px}.timeline-item{min-height:58px}.timeline-year{font-size:19px;min-width:53px}.result-page{padding:27px 0}.result-page h1{font-size:37px}.result-stat-grid>div{padding:20px 5px}.result-stat-grid small{font-size:7px}.result-stat-grid strong{font-size:25px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+
+/* CHRONIKA 0.2 — account / identity / player dashboard */
+.side-profile-button{width:100%;cursor:pointer;text-align:left;font:inherit}
+.side-profile-button:hover{border-color:#658c6d;background:#1a302a}
+.top-avatar-button{cursor:pointer;padding:0;font:inherit}
+.top-avatar-button:hover{outline:2px solid var(--mint2)}
+.account-banner{margin-bottom:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:18px 21px;border:1px solid #4b664c;background:linear-gradient(105deg,#1b302b,#182324);border-radius:15px}
+.account-banner>div{flex:1;min-width:230px}
+.account-banner b{color:#e1f6d8;font-size:14px}
+.account-banner p{color:#a9c3b0;font-size:12px;margin-top:4px}
+.account-page{display:grid;grid-template-columns:1fr minmax(330px,440px);min-height:590px;gap:45px;align-items:center;padding:30px 0}
+.account-intro{max-width:550px}
+.account-intro h1{font:700 clamp(45px,5vw,68px)/1.07 'Space Grotesk',sans-serif;letter-spacing:-.065em;margin:22px 0;color:#f1f4ee}
+.account-intro p{font-size:15px;line-height:1.9;color:#9bada7;max-width:450px}
+.account-perks{display:grid;gap:15px;margin:30px 0;color:#c5e9ba;font-size:12px;font-weight:700}
+.account-intro>.text-link{margin-top:12px}
+.account-panel,.player-panel{border:1px solid #2a3b42;background:linear-gradient(150deg,#17222e,#111b26);border-radius:19px;padding:32px;box-shadow:0 19px 47px #0003}
+.account-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border-radius:12px;background:#0c1420;margin-bottom:30px}
+.account-switch button{border:0;background:transparent;border-radius:9px;padding:11px;color:#9aa8b7;font-size:12px;font-weight:800}
+.account-switch button.selected{background:#263b34;color:var(--mint);box-shadow:0 1px 8px #0005}
+.account-panel h2{font-size:26px;letter-spacing:-.05em;margin:7px 0 25px}
+.account-form{display:grid;gap:17px}
+.account-form label,.player-settings label{display:grid;gap:7px;color:#a6bcb5;font-size:11px;font-weight:800;letter-spacing:.04em}
+.account-form input,.player-settings input{width:100%;min-width:0;background:#0b1420;border:1px solid #35454e;border-radius:10px;padding:13px 14px;font-size:14px;color:#f7f8f6;outline:0;letter-spacing:0}
+.account-form input:focus,.player-settings input:focus{border-color:#b4edac;box-shadow:0 0 0 3px #c6f6ac20}
+.account-form .btn{width:100%;margin-top:6px;min-height:48px}
+.account-error{color:#ffd2c9;background:#552d302b;border:1px solid #96575b;border-radius:9px;padding:11px;font-size:12px}
+.account-links{display:grid;gap:10px;justify-content:center;text-align:center;margin-top:20px;font-size:12px;color:#a7b6ae}
+.account-links button{border:0;background:none;padding:0;color:var(--mint);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.account-info{background:#243728;border:1px solid #425b43;border-radius:10px;color:#b9dfb3;padding:13px;font-size:11px;margin-top:22px}
+.player-hero{display:flex;align-items:center;justify-content:space-between;gap:25px;padding:32px;border-radius:20px;border:1px solid #46604f;background:radial-gradient(ellipse at 78% 9%,#709b7050,transparent 55%),linear-gradient(108deg,#1b332c,#152529);margin-bottom:16px}
+.player-identity{display:flex;align-items:center;gap:22px;min-width:0}
+.player-emblem{flex-shrink:0;width:88px;height:88px;border-radius:22px;display:grid;place-items:center;font:700 45px 'Space Grotesk';color:#ddf5c8;border:1px solid #88ac8d;background:#3b5b48}
+.player-identity h1{font-size:clamp(25px,4vw,38px);letter-spacing:-.055em;line-height:1.18;margin:6px 0}
+.player-identity p{color:#c1d2c7;font-size:12px;overflow-wrap:anywhere}
+.player-sync{font-size:10px;color:#b0dfb3;display:block;margin-top:9px}
+.player-actions{display:flex;gap:8px;flex-wrap:wrap}
+.player-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:20px}
+.player-stat-card{min-width:0;display:flex;flex-direction:column;gap:5px;border:1px solid #2e4545;border-radius:15px;padding:19px;background:linear-gradient(135deg,#14252a,#101c29)}
+.player-stat-icon{color:var(--mint);font-size:23px;height:34px}
+.player-stat-card small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#93aaa2}
+.player-stat-card strong{font-size:25px;letter-spacing:-.035em;color:#eef2eb;overflow-wrap:anywhere}
+.player-stat-card>span:last-child:not(.player-stat-icon){color:#829b93;font-size:11px}
+.player-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.player-panel{box-shadow:none;padding:24px;min-width:0}
+.player-panel h2{font-size:20px;letter-spacing:-.04em}
+.player-panel>p{color:#8fa6a4;font-size:11px;margin:5px 0 20px}
+.player-progress-row{margin-top:14px}
+.player-progress-row>div:first-child{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;color:#d3e5d8}
+.player-progress-row strong{color:var(--gold);white-space:nowrap}
+.player-progress-track{height:7px;border-radius:8px;background:#27353c;overflow:hidden;margin-top:9px}
+.player-progress-track i{display:block;height:100%;background:linear-gradient(90deg,#9bd6a7,#d8f6b7);border-radius:9px}
+.player-breakdown-row{display:grid;grid-template-columns:minmax(0,1fr) auto;row-gap:2px;align-items:center;gap:0 10px;border-top:1px solid #273a3e;padding:12px 0}
+.player-breakdown-row span{font-size:12px;color:#e0f0e6;font-weight:700}
+.player-breakdown-row strong{font-size:12px;color:var(--mint)}
+.player-breakdown-row small{grid-column:1/-1;color:#85989c;font-size:10px}
+.player-recent-row{display:flex;align-items:center;gap:8px;padding:12px 0;border-top:1px solid #2a383c}
+.player-recent-row>div{flex:1;display:grid;gap:3px;min-width:0}
+.player-recent-row b{font-size:12px}
+.player-recent-row small,.player-recent-row time{font-size:10px;color:#879da1}
+.player-recent-row strong{font-size:13px;color:var(--mint)}
+.player-recent-row time{min-width:62px;text-align:right}
+.player-empty{color:#849798;padding:20px 0;font-size:12px}
+.player-settings{margin-top:16px}
+.player-settings form{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.player-settings label{width:min(360px,100%)}
+.player-settings .btn{min-height:45px}
+@media(max-width:1080px){.account-page{gap:22px;grid-template-columns:1fr 1fr}.player-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.account-page{grid-template-columns:1fr;gap:19px;padding:7px 0 25px;min-height:0}.account-intro h1{font-size:38px;margin:14px 0}.account-intro p{font-size:12px}.account-perks{gap:7px;margin:15px 0}.account-panel{padding:21px}.account-panel h2{font-size:23px}.account-banner{padding:15px;gap:9px}.account-banner>div{min-width:100%}.account-banner .btn{flex:1}.player-hero{padding:18px;display:grid;gap:15px}.player-emblem{width:65px;height:65px;font-size:33px;border-radius:16px}.player-identity{gap:12px}.player-identity h1{font-size:27px}.player-identity p{font-size:10px}.player-actions .btn{flex:1;min-width:120px}.player-stat-grid{gap:8px}.player-stat-card{padding:13px}.player-stat-card strong{font-size:20px}.player-stat-card small{font-size:8px}.player-details{grid-template-columns:1fr;gap:10px}.player-panel{padding:19px}.player-settings form{display:grid}.player-settings label{width:100%}.mobile-footer .nav-item{min-width:0;padding:4px 5px;font-size:8px}}
