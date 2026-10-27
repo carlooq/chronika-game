@@ -17,7 +17,7 @@ env = { ...env, ...process.env };
 // Access control is enforced by Firebase Authentication and Firestore Rules.
 // By default CHRONIKA connects to its OWN Firebase project (never HITSTERIADA).
 const defaultFirebaseConfig = {
-  apiKey: 'AIzaSyBqia8RAKtdt0OW0cGUaXzwcj9xYxygrs4',
+  apiKey: 'AIzaSyBqia8RAktdt0OW0cGUaXzwcj9xYxygrs4',
   authDomain: 'chronika-2813f.firebaseapp.com',
   projectId: 'chronika-2813f',
   appId: '1:153413927646:web:4dccbcc539a4b5c078b84f',
