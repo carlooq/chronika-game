@@ -1,6 +1,7 @@
 import { normalizeCatalogCategory, normalizeCatalogEvent, SEED_CATEGORIES } from './catalog.js';
 import { ITEMS } from './data.js';
 import { CURATED_PL_V1_IDS, cleanCuratedV1Tags, curatedV1CleanupPreview } from './curatedCleanup.js';
+import { CINEMA_TITLE_FIXES, previewCinemaTitleFixes, eligibleCinemaTitleFix } from './filmTitleCleanup.js';
 
 export function createAdminDb(dbSdk, db, auth) {
   const categories=dbSdk.collection(db,'chronikaCategories');
@@ -193,6 +194,40 @@ export function createAdminDb(dbSdk, db, auth) {
     }
     return {added,skipped};
   }
+  async function previewCinemaTitleCleanup(){
+    await requireAdmin();
+    const records=[];
+    for(let start=0;start<CINEMA_TITLE_FIXES.length;start+=15){
+      const part=CINEMA_TITLE_FIXES.slice(start,start+15);
+      const snapshots=await Promise.all(part.map(x=>dbSdk.getDoc(dbSdk.doc(events,x.id))));
+      snapshots.forEach((snap,i)=>{
+        if(snap.exists())records.push({id:part[i].id,...snap.data()});
+      });
+    }
+    return {
+      total:CINEMA_TITLE_FIXES.length,
+      found:records.length,
+      changes:previewCinemaTitleFixes(records),
+    };
+  }
+  async function applyCinemaTitleCleanup(){
+    const user=await requireAdmin();
+    // Read all records before changing any document (Firestore transaction rule).
+    return dbSdk.runTransaction(db,async transaction=>{
+      const refs=CINEMA_TITLE_FIXES.map(x=>dbSdk.doc(events,x.id));
+      const docs=await Promise.all(refs.map(ref=>transaction.get(ref)));
+      const toUpdate=docs.map((snap,i)=>snap.exists()?
+        {ref:refs[i],change:eligibleCinemaTitleFix({id:CINEMA_TITLE_FIXES[i].id,...snap.data()})}:null
+      ).filter(x=>x?.change);
+      const now=Date.now();
+      toUpdate.forEach(({ref,change})=>transaction.update(ref,{
+        title:change.newTitle,
+        titleSort:change.newTitle.toLocaleLowerCase('pl'),
+        updatedAt:now,updatedBy:user.uid,
+      }));
+      return {updated:toUpdate.length,found:docs.filter(x=>x.exists()).length};
+    });
+  }
   async function importSampleEvents(){
     await requireAdmin();
     const docs=ITEMS.map(e=>normalizeCatalogEvent({
@@ -202,5 +237,5 @@ export function createAdminDb(dbSdk, db, auth) {
     }));
     return importEvents(docs);
   }
-  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds,catalogCounts,previewCuratedV1Cleanup,cleanupCuratedV1Tags};
+  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds,catalogCounts,previewCuratedV1Cleanup,cleanupCuratedV1Tags,previewCinemaTitleCleanup,applyCinemaTitleCleanup};
 }

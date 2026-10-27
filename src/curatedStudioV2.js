@@ -6,7 +6,7 @@
 export const CURATED_STUDIO_V2 = Object.freeze([
   {
     "id": "studio26-cinema-1933-premiera-filmu-king-kong",
-    "title": "Premiera filmu „King Kong”",
+    "title": "King Kong",
     "year": 1933,
     "description": "Klasyczny film o gigantycznej małpie staje się jednym z fundamentów kina przygodowego.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -21,7 +21,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1937-premiera-krolewny-sniezki-i-siedmiu-krasnoludkow",
-    "title": "Premiera „Królewny Śnieżki i siedmiu krasnoludków”",
+    "title": "Królewna Śnieżka i siedmiu krasnoludków",
     "year": 1937,
     "description": "Disney przedstawia pełnometrażowy film animowany, który odmienia historię animacji.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -36,7 +36,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1939-premiera-przeminelo-z-wiatrem",
-    "title": "Premiera „Przeminęło z wiatrem”",
+    "title": "Przeminęło z wiatrem",
     "year": 1939,
     "description": "W kinach pojawia się widowisko osadzone w czasach amerykańskiej wojny secesyjnej.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -51,7 +51,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1939-premiera-czarnoksieznika-z-oz",
-    "title": "Premiera „Czarnoksiężnika z Oz”",
+    "title": "Czarnoksiężnik z Oz",
     "year": 1939,
     "description": "Dorotka wyrusza do fantastycznej krainy w klasycznym filmie muzycznym.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -66,7 +66,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1941-premiera-obywatela-kane-a",
-    "title": "Premiera „Obywatela Kane’a”",
+    "title": "Obywatel Kane",
     "year": 1941,
     "description": "Orson Welles reżyseruje film uznawany za jeden z najważniejszych w historii kina.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -81,7 +81,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1942-premiera-casablanki",
-    "title": "Premiera „Casablanki”",
+    "title": "Casablanca",
     "year": 1942,
     "description": "Humphrey Bogart i Ingrid Bergman występują w słynnym melodramacie wojennym.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -96,7 +96,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1946-premiera-to-wspaniale-zycie",
-    "title": "Premiera „To wspaniałe życie”",
+    "title": "To wspaniałe życie",
     "year": 1946,
     "description": "Na ekrany trafia świąteczny klasyk Franka Capry z Jamesem Stewartem.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -111,7 +111,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1950-premiera-bulwaru-zachodzacego-slonca",
-    "title": "Premiera „Bulwaru Zachodzącego Słońca”",
+    "title": "Bulwar Zachodzącego Słońca",
     "year": 1950,
     "description": "Billy Wilder opowiada historię zapomnianej gwiazdy niemego kina.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -126,7 +126,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1952-premiera-deszczowej-piosenki",
-    "title": "Premiera „Deszczowej piosenki”",
+    "title": "Deszczowa piosenka",
     "year": 1952,
     "description": "Gene Kelly występuje w musicalu o przemianach Hollywood w epoce kina dźwiękowego.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -141,7 +141,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1954-premiera-okna-na-podworze",
-    "title": "Premiera „Okna na podwórze”",
+    "title": "Okno na podwórze",
     "year": 1954,
     "description": "Alfred Hitchcock opowiada historię fotografa obserwującego sąsiadów z okna.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -156,7 +156,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1957-premiera-mostu-na-rzece-kwai",
-    "title": "Premiera „Mostu na rzece Kwai”",
+    "title": "Most na rzece Kwai",
     "year": 1957,
     "description": "David Lean przedstawia dramat wojenny związany z budową mostu przez jeńców.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -171,7 +171,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1959-premiera-pol-zartem-pol-serio",
-    "title": "Premiera „Pół żartem, pół serio”",
+    "title": "Pół żartem, pół serio",
     "year": 1959,
     "description": "Marilyn Monroe występuje w słynnej komedii Billy’ego Wildera.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -186,7 +186,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1960-premiera-psychozy",
-    "title": "Premiera „Psychozy”",
+    "title": "Psychoza",
     "year": 1960,
     "description": "Film Alfreda Hitchcocka staje się jednym z najbardziej wpływowych thrillerów.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -201,7 +201,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1961-premiera-west-side-story",
-    "title": "Premiera „West Side Story”",
+    "title": "West Side Story",
     "year": 1961,
     "description": "Filmowa adaptacja musicalu przenosi konflikt dwóch gangów na ekran.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -216,7 +216,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1962-premiera-lawrence-a-z-arabii",
-    "title": "Premiera „Lawrence’a z Arabii”",
+    "title": "Lawrence z Arabii",
     "year": 1962,
     "description": "Epickie widowisko Davida Leana opowiada o brytyjskim oficerze na Bliskim Wschodzie.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -231,7 +231,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1964-premiera-doktora-strangelove",
-    "title": "Premiera „Doktora Strangelove”",
+    "title": "Doktor Strangelove",
     "year": 1964,
     "description": "Stanley Kubrick tworzy satyrę o groźbie wojny nuklearnej.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -246,7 +246,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1967-premiera-bonnie-i-clyde",
-    "title": "Premiera „Bonnie i Clyde”",
+    "title": "Bonnie i Clyde",
     "year": 1967,
     "description": "Film Arthura Penna odświeża kino gangsterskie i opowieści o antybohaterach.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -261,7 +261,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1968-premiera-2001-odysei-kosmicznej",
-    "title": "Premiera „2001: Odysei kosmicznej”",
+    "title": "2001: Odyseja kosmiczna",
     "year": 1968,
     "description": "Stanley Kubrick prezentuje przełomową wizję podróży kosmicznych.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -276,7 +276,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1971-premiera-mechanicznej-pomaranczy",
-    "title": "Premiera „Mechanicznej pomarańczy”",
+    "title": "Mechaniczna pomarańcza",
     "year": 1971,
     "description": "Kontrowersyjna dystopia Stanleya Kubricka trafia do kin.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -291,7 +291,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1972-premiera-ojca-chrzestnego",
-    "title": "Premiera „Ojca chrzestnego”",
+    "title": "Ojciec chrzestny",
     "year": 1972,
     "description": "Francis Ford Coppola przedstawia historię rodziny Corleone.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -306,7 +306,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1974-premiera-ojca-chrzestnego-ii",
-    "title": "Premiera „Ojca chrzestnego II”",
+    "title": "Ojciec chrzestny II",
     "year": 1974,
     "description": "Druga część opowieści o rodzinie Corleone ukazuje dwa pokolenia mafijnego rodu.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -321,7 +321,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1974-premiera-chinatown",
-    "title": "Premiera „Chinatown”",
+    "title": "Chinatown",
     "year": 1974,
     "description": "Roman Polański reżyseruje klasyczny kryminał noir z Jackiem Nicholsonem.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -336,7 +336,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1975-premiera-szczek",
-    "title": "Premiera „Szczęk”",
+    "title": "Szczęki",
     "year": 1975,
     "description": "Steven Spielberg buduje napięcie wokół rekina terroryzującego nadmorski kurort.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -351,7 +351,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1975-premiera-lotu-nad-kukulczym-gniazdem",
-    "title": "Premiera „Lotu nad kukułczym gniazdem”",
+    "title": "Lot nad kukułczym gniazdem",
     "year": 1975,
     "description": "Jack Nicholson występuje w dramacie Miloša Formana.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -366,7 +366,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1976-premiera-taksowkarza",
-    "title": "Premiera „Taksówkarza”",
+    "title": "Taksówkarz",
     "year": 1976,
     "description": "Martin Scorsese przedstawia historię samotnego kierowcy z Nowego Jorku.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -381,7 +381,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1977-premiera-pierwszych-gwiezdnych-wojen",
-    "title": "Premiera pierwszych „Gwiezdnych wojen”",
+    "title": "Gwiezdne wojny: Nowa nadzieja",
     "year": 1977,
     "description": "George Lucas rozpoczyna kinową sagę o odległej galaktyce.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -396,7 +396,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1979-premiera-czasu-apokalipsy",
-    "title": "Premiera „Czasu Apokalipsy”",
+    "title": "Czas Apokalipsy",
     "year": 1979,
     "description": "Francis Ford Coppola przenosi motywy Jądra ciemności w realia wojny w Wietnamie.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -411,7 +411,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1980-premiera-wscieklego-byka",
-    "title": "Premiera „Wściekłego Byka”",
+    "title": "Wściekły Byk",
     "year": 1980,
     "description": "Martin Scorsese opowiada historię boksera Jake’a LaMotty.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -426,7 +426,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1982-premiera-e-t",
-    "title": "Premiera „E.T.”",
+    "title": "E.T.",
     "year": 1982,
     "description": "Steven Spielberg przedstawia historię przyjaźni chłopca z przybyszem z kosmosu.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -441,7 +441,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1993-premiera-listy-schindlera",
-    "title": "Premiera „Listy Schindlera”",
+    "title": "Lista Schindlera",
     "year": 1993,
     "description": "Steven Spielberg opowiada o Oskarze Schindlerze i ratowaniu Żydów podczas Zagłady.",
     "sourceUrl": "https://www.afi.com/afis-100-years-100-movies/",
@@ -456,7 +456,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1994-premiera-skazanych-na-shawshank",
-    "title": "Premiera „Skazanych na Shawshank”",
+    "title": "Skazani na Shawshank",
     "year": 1994,
     "description": "Film opowiada o więźniu niesłusznie skazanym na dożywocie.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -471,7 +471,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1994-premiera-pulp-fiction",
-    "title": "Premiera „Pulp Fiction”",
+    "title": "Pulp Fiction",
     "year": 1994,
     "description": "Quentin Tarantino prezentuje wielowątkową historię z przestępczego półświatka.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -486,7 +486,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1994-premiera-forresta-gumpa",
-    "title": "Premiera „Forresta Gumpa”",
+    "title": "Forrest Gump",
     "year": 1994,
     "description": "Tom Hanks gra bohatera, który przypadkiem uczestniczy w ważnych wydarzeniach historii USA.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -501,7 +501,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1999-premiera-matrixa",
-    "title": "Premiera „Matrixa”",
+    "title": "Matrix",
     "year": 1999,
     "description": "Wachowscy przedstawiają science fiction o rzeczywistości będącej komputerową symulacją.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -516,7 +516,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1999-premiera-podziemnego-kregu",
-    "title": "Premiera „Podziemnego kręgu”",
+    "title": "Podziemny krąg",
     "year": 1999,
     "description": "David Fincher tworzy film oparty na powieści Chucka Palahniuka.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -531,7 +531,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2001-premiera-wladcy-pierscieni-druzyny-pierscienia",
-    "title": "Premiera „Władcy Pierścieni: Drużyny Pierścienia”",
+    "title": "Władca Pierścieni: Drużyna Pierścienia",
     "year": 2001,
     "description": "Peter Jackson rozpoczyna filmową trylogię fantasy na podstawie powieści Tolkiena.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -546,7 +546,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2002-premiera-wladcy-pierscieni-dwoch-wiez",
-    "title": "Premiera „Władcy Pierścieni: Dwóch wież”",
+    "title": "Władca Pierścieni: Dwie wieże",
     "year": 2002,
     "description": "Druga część trylogii Petera Jacksona kontynuuje wyprawę po Śródziemiu.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -561,7 +561,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2003-premiera-wladcy-pierscieni-powrotu-krola",
-    "title": "Premiera „Władcy Pierścieni: Powrotu króla”",
+    "title": "Władca Pierścieni: Powrót króla",
     "year": 2003,
     "description": "Kinowy finał trylogii Petera Jacksona trafia na ekrany.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -576,7 +576,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2008-premiera-mrocznego-rycerza",
-    "title": "Premiera „Mrocznego Rycerza”",
+    "title": "Mroczny Rycerz",
     "year": 2008,
     "description": "Christopher Nolan przedstawia starcie Batmana z Jokerem granym przez Heatha Ledgera.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -591,7 +591,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2010-premiera-incepcji",
-    "title": "Premiera „Incepcji”",
+    "title": "Incepcja",
     "year": 2010,
     "description": "Christopher Nolan tworzy thriller science fiction o wchodzeniu w sny.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -606,7 +606,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2014-premiera-interstellar",
-    "title": "Premiera „Interstellar”",
+    "title": "Interstellar",
     "year": 2014,
     "description": "Film Christophera Nolana przedstawia wyprawę kosmiczną w poszukiwaniu nowego domu ludzkości.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -621,7 +621,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-2019-premiera-parasite",
-    "title": "Premiera „Parasite”",
+    "title": "Parasite",
     "year": 2019,
     "description": "Bong Joon-ho prezentuje południowokoreański thriller społeczny.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -636,7 +636,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1990-premiera-chlopcow-z-ferajny",
-    "title": "Premiera „Chłopców z ferajny”",
+    "title": "Chłopcy z ferajny",
     "year": 1990,
     "description": "Martin Scorsese opowiada historię Henry’ego Hilla i środowiska mafii.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -651,7 +651,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1995-premiera-siedem",
-    "title": "Premiera „Siedem”",
+    "title": "Siedem",
     "year": 1995,
     "description": "David Fincher tworzy mroczny thriller o śledztwie w sprawie serii zabójstw.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",
@@ -666,7 +666,7 @@ export const CURATED_STUDIO_V2 = Object.freeze([
   },
   {
     "id": "studio26-cinema-1991-premiera-milczenia-owiec",
-    "title": "Premiera „Milczenia owiec”",
+    "title": "Milczenie owiec",
     "year": 1991,
     "description": "Jodie Foster i Anthony Hopkins występują w thrillerze psychologicznym.",
     "sourceUrl": "https://www.filmweb.pl/lista/5397",

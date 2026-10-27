@@ -37,3 +37,13 @@ Wszystkie źródła są do przeglądania — **nie skopiowaliśmy cudzych opisó
 
 ## Kolejne kroki do 10 000
 Powiększanie zbioru jest procesem wieloetapowym: nowe paczki filmów, gier i nauki, następnie osobne źródła dla sportu, literatury, historii Polski i świata. Zautomatyzujemy **dobór kandydatów**, ale ocenę znaczenia, zgodność dat, deduplikację i jakość opisów nadal trzeba kontrolować. Panel może używać w przyszłości API do generowania polskiej redakcji, jednak **nie potrzebujesz go, żeby dodać tę paczkę**.
+
+## Korekta nazewnictwa — 45 filmów
+
+Pierwsza wersja błędnie używała schematu `Premiera „...”` w tytułach filmów. Poprawiony pakiet zawiera naturalne polskie tytuły w mianowniku, np. `Ojciec chrzestny`, `Psychoza`, `Matrix`, `2001: Odyseja kosmiczna` i `Władca Pierścieni: Dwie wieże`. Rok w karcie oznacza rok pierwszej premiery filmowej, a krótki opis objaśnia kontekst.
+
+Jeżeli poprzednia paczka została już zaimportowana, **Panel admina → Gotowe pakiety → Sprawdź tytuły w bazie → Popraw ... tytułów jednym kliknięciem**. Panel pokazuje porównanie starej i nowej nazwy przed potwierdzeniem.
+
+Migracja dotyczy tylko **dokładnie 45 konkretnych ID z pierwszego pakietu V2** i tylko wtedy, gdy tytuł nadal jest identyczny z naszym starym wariantem. Ręcznych zmian administratora nie nadpisuje. Zachowuje ID dokumentu, rok, opis, źródło, kategorie, status i tagi. Zmienia `title`, `titleSort` (aby wyszukiwarka działała poprawnie) oraz pola czasu i autora modyfikacji. Wielokrotne uruchomienie jest bezpieczne. Nie wymaga nowych reguł Firestore.
+
+**Reguła redakcyjna na przyszłość:** tytuł wydarzenia w CHRONICE ma być najkrótszą naturalną nazwą obiektu lub historycznego faktu, jaką gracz rozpozna. Nie dopisujemy w kółko „Premiera”, gdy typ wydarzenia wynika z kategorii i pola roku. Wyjątki tylko tam, gdzie konkretna czynność lub miejsce premiery są istotą zagadki (np. odróżnienie wersji USA od światowej).

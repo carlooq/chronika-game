@@ -27,4 +27,11 @@ test('sample source-date checks and no technical tags',()=>{
   assert.equal(get('Odkrycie cząstki zgodnej z bozonem Higgsa')?.year,2012);
   assert.equal(get('Pierwszy start kobiet na igrzyskach olimpijskich')?.year,1900);
   assert.ok(!CURATED_STUDIO_V2.some(x=>x.id.includes('kurator-pl-')));
+  const cinema=CURATED_STUDIO_V2.filter(x=>x.categoryIds.includes('cinema'));
+  assert.equal(cinema.length,45);
+  assert.ok(cinema.every(x=>!/^Premiera(?:\\b|\\s)/i.test(x.title)));
+  assert.equal(get('Ojciec chrzestny')?.year,1972);
+  assert.equal(get('Matrix')?.year,1999);
+  assert.equal(get('Królewna Śnieżka i siedmiu krasnoludków')?.year,1937);
+  assert.equal(get('Władca Pierścieni: Dwie wieże')?.year,2002);
 });

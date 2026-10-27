@@ -15,7 +15,8 @@ export function createAdminPanel(api) {
     anniversaries:{startDay:'01-01',days:14,target:'world',items:[],received:0,rejected:0,
       succeeded:0,failed:[],requested:0,hasPreview:false,nextDay:'01-15',progress:null},
     coverage:null,
-    curatedV2:{checked:false,existing:[],category:'',lastImport:null},
+    curatedV2:{checked:false,existing:[],category:'',lastImport:null,
+      titleCleanup:{checked:false,found:0,total:45,changes:[]}},
   };
   let root=null;
   function notify(message,error=false){state.error=error?message:'';state.info=error?'':message;update();}
@@ -321,6 +322,27 @@ export function createAdminPanel(api) {
         `W bazie znaleziono ${studio.existing.length} identycznych ID tej paczki. Gotowych do dodania: ${queued.length}.`:
         'Najpierw kliknij „Sprawdź istniejące rekordy”. Nic nie zostanie zapisane bez potwierdzenia.'}
         Wszystkie nowo dodane rekordy otrzymają status <b>„Do weryfikacji”</b>. Nie zostają automatycznie udostępnione graczom. Wstępne daty porównano z podanymi źródłami, ale przy masowej publikacji nadal zalecana jest kontrola redakcyjna.</p>
+      <div class="admin-panel-card" style="margin:16px 0;background:#192f33;">
+        <h3 style="margin:0 0 8px;">Poprawa tytułów filmów</h3>
+        <p class="admin-hint">Tytuły 45 filmów uporządkowałem do formy „Matrix”, „Ojciec chrzestny”, „Psychoza” — bez słowa „Premiera”.
+          Działa również dla pozycji, które zostały już zaimportowane do Firebase. Nie zmienia dat, opisów ani identyfikatorów.</p>
+        <div class="admin-import-actions">
+          <button class="btn btn-outline" data-admin="studio-title-check" ${state.busy?'disabled':''}>Sprawdź tytuły w bazie</button>
+          ${studio.titleCleanup?.checked&&studio.titleCleanup.changes.length?
+            `<button class="btn btn-primary" data-admin="studio-title-fix" ${state.busy?'disabled':''}>
+              Popraw ${studio.titleCleanup.changes.length} tytułów jednym kliknięciem
+            </button>`:''}
+        </div>
+        ${studio.titleCleanup?.checked?`
+          <p class="admin-hint">Znaleziono: ${studio.titleCleanup.found} z 45. Wymaga zmiany: ${studio.titleCleanup.changes.length}.
+            ${studio.titleCleanup.changes.length===0?'Wszystkie znalezione tytuły są już poprawione lub zostały ręcznie zmienione.':''}</p>
+          ${studio.titleCleanup.changes.length?`
+            <div class="admin-table-scroll"><table class="admin-table">
+              <thead><tr><th>Było</th><th>Będzie</th></tr></thead><tbody>
+                ${studio.titleCleanup.changes.map(x=>`<tr><td>${esc(x.oldTitle)}</td><td><strong>${esc(x.newTitle)}</strong></td></tr>`).join('')}
+              </tbody></table></div>`:''}
+        `:''}
+      </div>
       <div class="admin-filters">
         <label>Kategoria do podglądu<select data-studio-filter>
           <option value="">Wszystkie — ${CURATED_STUDIO_V2.length}</option>
@@ -454,6 +476,23 @@ export function createAdminPanel(api) {
     }
 
 
+    if(action==='studio-title-check'){
+      await run(async()=>{
+        state.curatedV2.titleCleanup={...(await api.previewCinemaTitleCleanup()),checked:true};
+        state.info='Sprawdzono tytuły. Do korekty: '+state.curatedV2.titleCleanup.changes.length+'.';
+      });return;
+    }
+    if(action==='studio-title-fix'){
+      const count=state.curatedV2.titleCleanup?.checked?state.curatedV2.titleCleanup.changes.length:0;
+      if(!count)return;
+      if(!confirm('Poprawić tytuły '+count+' filmów w Firebase? Inne pola i ręcznie zmienione tytuły pozostaną bez zmian.'))return;
+      await run(async()=>{
+        const result=await api.applyCinemaTitleCleanup();
+        state.curatedV2.titleCleanup={...(await api.previewCinemaTitleCleanup()),checked:true};
+        state.info='Poprawiono '+result.updated+' tytułów filmów, zachowując ich daty, opisy, statusy i kategorie.';
+        await loadEvents(true);
+      });return;
+    }
     if(action==='studio-check'){
       await run(async()=>{
         const existing=[];
