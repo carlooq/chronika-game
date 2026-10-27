@@ -13,10 +13,21 @@ try {
   }
 } catch { /* optional local environment */ }
 env = { ...env, ...process.env };
+// Firebase Web config is public client-side project identification, not a secret.
+// Access control is enforced by Firebase Authentication and Firestore Rules.
+// By default CHRONIKA connects to its OWN Firebase project (never HITSTERIADA).
+const defaultFirebaseConfig = {
+  apiKey: 'AIzaSyBqia8RAKtdt0OW0cGUaXzwcj9xYxygrs4',
+  authDomain: 'chronika-2813f.firebaseapp.com',
+  projectId: 'chronika-2813f',
+  appId: '1:153413927646:web:4dccbcc539a4b5c078b84f',
+  storageBucket: 'chronika-2813f.firebasestorage.app',
+  messagingSenderId: '153413927646',
+};
 const keys = ['API_KEY', 'AUTH_DOMAIN', 'PROJECT_ID', 'APP_ID', 'STORAGE_BUCKET', 'MESSAGING_SENDER_ID'];
 const cfg = Object.fromEntries(keys.map(key => {
   const firebaseKey = key.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-  return [firebaseKey, env[`VITE_FIREBASE_${key}`] || ''];
+  return [firebaseKey, env[`VITE_FIREBASE_${key}`] || defaultFirebaseConfig[firebaseKey] || ''];
 }));
 await rm(out, { recursive:true, force:true });
 await mkdir(out, { recursive:true });

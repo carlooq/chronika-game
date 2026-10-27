@@ -62,7 +62,7 @@ Zastąp `TWOJ_LOGIN` swoim loginem GitHub. Na GitHubie możesz też użyć „Up
 3. **Authentication → Sign-in method** → włącz **Anonymous**.
 4. **Firestore Database → Create database** → wybierz region odpowiedni dla graczy (nie zmienisz go później łatwo); uruchom z restrykcyjnymi regułami.
 5. **Firestore Database → Rules** → zastąp reguły kodem z `firestore.rules`, opublikuj je.
-6. W lokalnym pliku `.env.local` wpisz wartości z konfiguracji Firebase, korzystając ze wzoru `.env.example`:
+6. Konfiguracja Firebase jest już wpisana w `scripts/build.mjs`. Nie musisz tworzyć `.env.local` ani dodawać zmiennych w Vercel. W razie zmiany projektu możesz opcjonalnie nadpisać wartości, korzystając ze wzoru `.env.example`:
 
 ```dotenv
 VITE_FIREBASE_API_KEY=AIza...
@@ -82,7 +82,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456
 1. Otwórz [Vercel](https://vercel.com/new), **Add New Project → Import Git Repository**.
 2. Wybierz nowe repo `chronika-game` (nie `music`).
 3. **Framework Preset:** Other; **Build Command:** `npm run build`; **Output Directory:** `dist`.
-4. **Environment Variables**: dodaj sześć zmiennych `VITE_FIREBASE_...` z `.env.local`. Nie dodawaj samego `.env.local` do GitHub (jest w `.gitignore`).
+4. **Environment Variables**: nie musisz nic dodawać. Publiczna konfiguracja Firebase projektu `chronika-2813f` jest już uwzględniona w `scripts/build.mjs`. Opcjonalnie można nadpisać ją sześcioma zmiennymi `VITE_FIREBASE_...`. Nie dodawaj `.env.local` do GitHub.
 5. Wdrożenie → **Deploy**. Weryfikacja: otwórz URL Vercel, zagraj w pierwszy etap, zdobądź gwiazdkę, odśwież stronę, sprawdź progres; sprawdź nowy dokument w Firestore.
 
 **Nie wstawiaj żadnego service-account private key do kodu klienta.** Firebase *web config* jest jawna i polega na regułach bezpieczeństwa.
