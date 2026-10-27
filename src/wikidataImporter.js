@@ -112,6 +112,6 @@ export function identifyCandidateDuplicates(items,existingIds=[]){
     nameYear.add(identity);
     const alreadyStored=existing.has(item.id);
     return {...item,alreadyStored,duplicateInBatch,
-      selected:!alreadyStored&&!duplicateInBatch};
+      selected:false};
   });
 }

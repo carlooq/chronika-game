@@ -137,7 +137,7 @@ export function createAdminPanel(api) {
           <span><b>${eligible.length}</b> zaznaczonych</span>
         </div>
         <div class="admin-import-actions">
-          <button data-admin="wd-select-all" class="btn btn-outline" ${state.busy?'disabled':''}>Zaznacz nowe</button>
+          <span class="admin-hint">Zaznaczaj wyłącznie sprawdzone wydarzenia.</span>
           <button data-admin="wd-select-none" class="btn btn-outline" ${state.busy?'disabled':''}>Odznacz wszystkie</button>
           <button data-admin="wd-import" class="btn btn-primary" ${!eligible.length||state.busy?'disabled':''}>Zapisz ${eligible.length} szkiców w Firebase</button>
         </div>

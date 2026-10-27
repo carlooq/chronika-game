@@ -38,7 +38,7 @@ test('sparql rows generate review-only, attributable and unique source IDs',()=>
   assert.ok(parsed.items[1].flags.includes('Brak opisu w Wikidata'));
   const selection=identifyCandidateDuplicates(parsed.items,['wikidata-q123']);
   assert.equal(selection[0].selected,false);
-  assert.equal(selection[1].selected,true);
+  assert.equal(selection[1].selected,false);
 });
 test('fetch parses response and handles upstream rate limiting',async()=>{
   const ok=async(url)=>({ok:true,status:200,json:async()=>result});
