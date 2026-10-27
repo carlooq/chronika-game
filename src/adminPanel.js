@@ -1,6 +1,7 @@
 import { parseEventImport, slugify, CATEGORY_STATUSES, EVENT_STATUSES } from './catalog.js';
 import { WIKIDATA_SCOPES, WIKIDATA_LIMITS, fetchWikidataCandidates, identifyCandidateDuplicates } from './wikidataImporter.js';
 import { ANNIVERSARY_DAYS, fetchSelectedAnniversaries, uniqueAnniversaryCandidates } from './anniversaryImporter.js';
+import { CURATED_STUDIO_V2, CURATED_STUDIO_V2_INFO } from './curatedStudioV2.js';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labelStatus=s=>({draft:'Szkic',review:'Do weryfikacji',published:'Zatwierdzone',archived:'Archiwum'})[s]||s;
 const option=(value,label,selected)=>`<option value="${esc(value)}" ${selected?'selected':''}>${esc(label)}</option>`;
@@ -14,6 +15,7 @@ export function createAdminPanel(api) {
     anniversaries:{startDay:'01-01',days:14,target:'world',items:[],received:0,rejected:0,
       succeeded:0,failed:[],requested:0,hasPreview:false,nextDay:'01-15',progress:null},
     coverage:null,
+    curatedV2:{checked:false,existing:[],category:'',lastImport:null},
   };
   let root=null;
   function notify(message,error=false){state.error=error?message:'';state.info=error?'':message;update();}
@@ -295,10 +297,56 @@ export function createAdminPanel(api) {
     </section>`;
   }
 
+
+  function curatedV2View(){
+    const studio=state.curatedV2;
+    const existingIds=new Set(studio.existing);
+    const queued=CURATED_STUDIO_V2.filter(e=>!existingIds.has(e.id));
+    const visible=CURATED_STUDIO_V2.filter(e=>!studio.category||e.categoryIds.includes(studio.category));
+    return `<section class="admin-panel-card admin-ready-pack">
+      <div class="admin-toolbar"><div>
+        <span class="kicker">CHRONIKA · GOTOWA REDAKCJA PO POLSKU</span>
+        <h2>${esc(CURATED_STUDIO_V2_INFO.label)}</h2>
+        <p>Gotowe tytuły, polskie opisy, roki i źródła. Bez ręcznego tłumaczenia, przepisywania ani importowania CSV.</p>
+      </div><span class="admin-state review">${CURATED_STUDIO_V2.length} wydarzeń</span></div>
+      <div class="admin-coverage-summary">
+        ${Object.entries(CURATED_STUDIO_V2_INFO.topics).map(([id,n])=>`<div>
+          <small>${esc(categoryTitle(id))}</small><strong>${n}</strong></div>`).join('')}
+      </div>
+      <div class="admin-import-actions">
+        <button class="btn btn-outline" data-admin="studio-check" ${state.busy?'disabled':''}>Sprawdź istniejące rekordy</button>
+        <button class="btn btn-primary" data-admin="studio-import" ${!studio.checked||!queued.length||state.busy?'disabled':''}>Dodaj ${studio.checked?queued.length:'–'} gotowych wydarzeń do Firebase</button>
+      </div>
+      <p class="admin-hint">${studio.checked?
+        `W bazie znaleziono ${studio.existing.length} identycznych ID tej paczki. Gotowych do dodania: ${queued.length}.`:
+        'Najpierw kliknij „Sprawdź istniejące rekordy”. Nic nie zostanie zapisane bez potwierdzenia.'}
+        Wszystkie nowo dodane rekordy otrzymają status <b>„Do weryfikacji”</b>. Nie zostają automatycznie udostępnione graczom. Wstępne daty porównano z podanymi źródłami, ale przy masowej publikacji nadal zalecana jest kontrola redakcyjna.</p>
+      <div class="admin-filters">
+        <label>Kategoria do podglądu<select data-studio-filter>
+          <option value="">Wszystkie — ${CURATED_STUDIO_V2.length}</option>
+          ${Object.keys(CURATED_STUDIO_V2_INFO.topics).map(id=>option(id,categoryTitle(id),studio.category===id)).join('')}
+        </select></label>
+      </div>
+      <div class="admin-table-scroll"><table class="admin-table admin-ready-table">
+        <thead><tr><th>Wydarzenie i gotowy opis PL</th><th>Rok</th><th>Kategoria</th><th>Źródło</th><th>Status</th></tr></thead>
+        <tbody>${visible.map(e=>`<tr>
+          <td><strong>${esc(e.title)}</strong><small>${esc(e.description)}</small></td>
+          <td>${e.year<0?`${-e.year} p.n.e.`:e.year}</td>
+          <td>${esc(categoryTitle(e.categoryIds[0]))}</td>
+          <td><a class="admin-link" href="${esc(e.sourceUrl)}" target="_blank" rel="noopener noreferrer">Sprawdź ↗</a></td>
+          <td>${studio.checked&&existingIds.has(e.id)?
+            '<span class="admin-state published">Jest w bazie</span>':
+            '<span class="admin-state review">Gotowe do importu</span>'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <p class="admin-hint">Nie dodajemy technicznych tagów. Opisy są zredagowane po polsku i nie są kopiami angielskich opisów ze źródeł. Identyfikatory Firestore są ukryte w tym widoku.</p>
+    </section>`;
+  }
+
   function render(){
     const head=`<header class="admin-head"><div><span class="kicker">CHRONIKA · NARZĘDZIA REDAKCYJNE</span><h1>Centrum danych</h1><p>Jedna baza wydarzeń, wiele kategorii. Panel dostępny wyłącznie upoważnionym kontom.</p></div><div class="admin-head-actions"><button data-admin="refresh" class="btn btn-outline">Odśwież</button><button data-admin="export" class="btn btn-outline">Eksport JSON</button></div></header>`;
     const tabs=`<div class="admin-tabs">
-      ${[['events','Wydarzenia'],['categories','Kategorie'],['anniversaries','Wybrane rocznice'],['coverage','Postęp bazy'],['wikidata','Wikidata'],['import','Import / eksport']].map(([tab,name])=>`<button data-admin="tab" data-tab="${tab}" class="${state.tab===tab?'active':''}">${name}</button>`).join('')}
+      ${[['events','Wydarzenia'],['categories','Kategorie'],['studio','Gotowe pakiety'],['anniversaries','Wybrane rocznice'],['coverage','Postęp bazy'],['wikidata','Wikidata'],['import','Import / eksport']].map(([tab,name])=>`<button data-admin="tab" data-tab="${tab}" class="${state.tab===tab?'active':''}">${name}</button>`).join('')}
     </div>`;
     const alert=`${state.error?`<div class="admin-alert error" role="alert">${esc(state.error)}</div>`:''}${state.info?`<div class="admin-alert success" role="status">${esc(state.info)}</div>`:''}`;
     let body='';
@@ -317,6 +365,7 @@ export function createAdminPanel(api) {
       <div class="admin-pages"><button class="btn btn-outline" data-admin="prev" ${state.page<=1||state.busy?'disabled':''}>← Poprzednia</button><span>Strona ${state.page}</span><button class="btn btn-outline" data-admin="next" ${!state.hasMore||state.busy?'disabled':''}>Następna →</button></div>
     </section>`;
     }
+    else if(state.tab==='studio')body=curatedV2View();
     else if(state.tab==='anniversaries')body=anniversariesView();
     else if(state.tab==='coverage')body=coverageView();
     else if(state.tab==='wikidata')body=wikidataView();
@@ -404,6 +453,35 @@ export function createAdminPanel(api) {
       });return;
     }
 
+
+    if(action==='studio-check'){
+      await run(async()=>{
+        const existing=[];
+        for(let i=0;i<CURATED_STUDIO_V2.length;i+=100)
+          existing.push(...await api.existingEventIds(CURATED_STUDIO_V2.slice(i,i+100).map(e=>e.id)));
+        state.curatedV2.existing=[...new Set(existing)];
+        state.curatedV2.checked=true;
+        state.info='Sprawdzono '+CURATED_STUDIO_V2.length+' wydarzeń: '+state.curatedV2.existing.length+' już znajduje się w bazie.';
+      });return;
+    }
+    if(action==='studio-import'){
+      if(!state.curatedV2.checked)return;
+      const found=new Set(state.curatedV2.existing);
+      const pending=CURATED_STUDIO_V2.filter(e=>!found.has(e.id));
+      if(!pending.length)return;
+      if(!confirm('Dodać '+pending.length+' gotowych wydarzeń po polsku do Firebase ze statusem DO WERYFIKACJI? Nie będą widoczne dla graczy.'))return;
+      await run(async()=>{
+        const result=await api.importEvents(pending);
+        const foundNow=[];
+        for(let i=0;i<CURATED_STUDIO_V2.length;i+=100)
+          foundNow.push(...await api.existingEventIds(CURATED_STUDIO_V2.slice(i,i+100).map(e=>e.id)));
+        state.curatedV2.existing=[...new Set(foundNow)];
+        state.curatedV2.lastImport=result;
+        state.coverage=null;
+        await loadEvents(true);
+        state.info='Dodano '+result.added+' wydarzeń. Pominięto '+result.skipped+' istniejących. Nie trafiły automatycznie do gry.';
+      });return;
+    }
     if(action==='coverage-refresh'){
       await run(async()=>{state.coverage=await api.catalogCounts();state.info='Odczytano aktualne liczniki Firestore.';});return;
     }
@@ -562,6 +640,8 @@ export function createAdminPanel(api) {
       if(candidate)candidate.polishTitle=input.value;
     };
     root.onchange=event=>{
+      const studioFilter=event.target.closest('[data-studio-filter]');
+      if(studioFilter){state.curatedV2.category=studioFilter.value;update();return;}
       const anniv=event.target.closest('[data-anniv-id]');
       if(anniv){
         if(anniv.disabled)return;
