@@ -1,0 +1,9 @@
+# Local configuration and generated artifacts
+.env
+.env.local
+.env.*.local
+node_modules/
+dist/
+.vercel/
+.DS_Store
+*.log
