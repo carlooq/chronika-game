@@ -54,6 +54,79 @@ service cloud.firestore {
             || request.resource.data.createdAt is int);
       allow delete: if false;
     }
+    // A privileged account must be added MANUALLY in the Firebase Console:
+    // chronikaAdmins/{FirebaseAuthUID} with boolean field enabled = true.
+    // No client can give itself admin permissions.
+    function isCatalogAdmin() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && exists(/databases/$(database)/documents/chronikaAdmins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/chronikaAdmins/$(request.auth.uid)).data.enabled == true;
+    }
+    match /chronikaAdmins/{adminUid} {
+      allow get: if isOwner(adminUid);
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+    // Catalogue is private to editors for now. Publishing a record in the
+    // dashboard does NOT make it available to game clients or reveal answers.
+    match /chronikaCategories/{categoryId} {
+      allow read: if isCatalogAdmin();
+      allow create, update: if isCatalogAdmin()
+        && request.resource.data.keys().hasOnly([
+          'id','name','parentId','status','description','sortOrder',
+          'createdAt','updatedAt','updatedBy'
+        ])
+        && request.resource.data.id == categoryId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.parentId is string
+        && request.resource.data.parentId.size() <= 130
+        && request.resource.data.status in ['draft','published','archived']
+        && request.resource.data.description is string
+        && request.resource.data.sortOrder is int
+        && request.resource.data.createdAt is int
+        && request.resource.data.updatedAt is int
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+    match /chronikaEvents/{eventId} {
+      allow read: if isCatalogAdmin();
+      allow create, update: if isCatalogAdmin()
+        && request.resource.data.keys().hasOnly([
+          'id','title','titleSort','year','categoryIds','status',
+          'difficulty','description','sourceUrl','sourceName',
+          'tags','datePrecision','createdAt','updatedAt','updatedBy'
+        ])
+        && request.resource.data.id == eventId
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.titleSort is string
+        && request.resource.data.year is int
+        && request.resource.data.year >= -3000
+        && request.resource.data.year <= 2100
+        && request.resource.data.year != 0
+        && request.resource.data.categoryIds is list
+        && request.resource.data.categoryIds.size() >= 1
+        && request.resource.data.categoryIds.size() <= 15
+        && request.resource.data.status in ['draft','review','published','archived']
+        && request.resource.data.difficulty is int
+        && request.resource.data.difficulty >= 1
+        && request.resource.data.difficulty <= 5
+        && request.resource.data.description is string
+        && request.resource.data.sourceUrl is string
+        && (request.resource.data.status != 'published' || request.resource.data.sourceUrl.size() > 0)
+        && request.resource.data.sourceName is string
+        && request.resource.data.tags is list
+        && request.resource.data.tags.size() <= 20
+        && request.resource.data.datePrecision in ['day','year']
+        && request.resource.data.createdAt is int
+        && request.resource.data.updatedAt is int
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
     match /{document=**} {
       allow read, write: if false;
     }

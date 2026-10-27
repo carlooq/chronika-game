@@ -1,5 +1,6 @@
 import { firebaseConfig } from './firebase-config.js';
 import { applyRunStats, normaliseStats } from './playerStats.js';
+import { createAdminDb } from './adminDb.js';
 
 // CHRONIKA has its own Firebase project. SDK web configuration is public.
 export async function connectFirebase() {
@@ -28,6 +29,7 @@ export async function connectFirebase() {
   };
 
   return {
+    admin:createAdminDb(dbSdk,db,auth),
     currentSession() {
       const user = auth.currentUser;
       return user ? { uid:user.uid, anonymous:user.isAnonymous, email:user.email || '', name:user.displayName || '' } : null;

@@ -2,6 +2,12 @@
 
 **Osobny projekt**, niezależny od HITSTERIADY. Pierwsza grywalna wersja dla 1 gracza, gotowa do hostowania na Vercel i połączenia z *nowym* projektem Firebase. Nazwa i grafika są robocze.
 
+## Panel admina i rozbudowa bazy (MVP 0.3)
+
+Nowy panel administracyjny zarządza kategoriami oraz wydarzeniami w odrębnych kolekcjach Firebase. Dostęp ma tylko konto z ręcznie przyznanym wpisem admina. **[Instrukcja uruchomienia panelu i nadawania dostępu](docs/ADMIN_PANEL.md)**.
+
+Uwaga: kategorie w panelu stanowią katalog roboczy. Kampania i szybkie gry wciąż korzystają ze starego zbioru próbnego; pytania dla graczy wczytywane z nowej bazy i weryfikacja treści to kolejny etap. Nie włączać przedwcześnie niesprawdzonych kategorii.
+
 ## Co już działa
 
 - Responsywny interfejs: pulpit, kampania, szybka gra i informacyjny ekran areny.

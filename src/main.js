@@ -3,11 +3,13 @@ import { awardStageProgress, initialProgress, isStageUnlocked, progressSummary, 
 import { readLocalProgress, saveLocalProgress, mergeProgress, readLocalStats, saveLocalStats } from './store.js';
 import { connectFirebase, friendlyAuthError } from './firebase.js';
 import { initialPlayerStats, normaliseStats, applyRunStats, accuracyPercent, formatDuration } from './playerStats.js';
+import { createAdminPanel } from './adminPanel.js';
 
 const app=document.getElementById('app');
 const state={
   page:'auth', authMode:'register', authError:'', authPending:false, loadingSession:0,
   session:null, profile:null, firebase:null, stats:initialPlayerStats(),
+  adminAllowed:false,adminPanel:null,
   progress:readLocalProgress(), category:'cinema', type:'timeline', run:null,
   yearChoices:[], result:null, cloudState:'connecting', toast:null,
 };
@@ -37,15 +39,16 @@ function renderShell(inner){const c=count();return `
     ${nav('quick','⌁','Szybka gra')}
     ${nav('arena','♜','Arena 1 na 1')}
     ${nav('profile','♙','Mój profil')}
+    ${state.adminAllowed?nav('admin','⚙','Panel admina'):''}
   </nav>
   <div class="sidebar-spacer"></div>
   <button class="side-profile side-profile-button" data-action="navigate" data-target="profile"><div class="profile-emblem">${clean(avatarLetter())}</div><span><b>${clean(playerName())}</b><small>${isMember()?'Konto gracza · Firebase':'Gra jako gość'}</small></span><span class="profile-arrow">↗</span></button>
   <div class="side-footer">WERSJA 0.1 · OSOBNY PROJEKT<br/>NIEZALEŻNY OD HITSTERIADY</div>
 </aside>
 <div class="main-wrap">
-<header class="topbar"><div class="breadcrumb">CHRONIKA <span> / </span> ${({home:'PULPIT',campaign:'KAMPANIA',quick:'SZYBKA GRA',arena:'ARENA',game:'ROZGRYWKA',result:'WYNIK',auth:'TWOJE KONTO',profile:'MÓJ PROFIL'})[state.page]||'PULPIT'}</div><div class="top-right"><span class="online-tag"><i></i>${state.cloudState==='connected'?(isMember()?'ZAPIS ONLINE':'TRYB GOŚCIA'):state.cloudState==='connecting'?'ŁĄCZENIE…':'ZAPIS LOKALNY'}</span><div class="top-points">${icon('star')} <strong>${c.stars}</strong><span> / ${c.maxStars}</span></div><button class="top-avatar top-avatar-button" aria-label="Otwórz profil" data-action="navigate" data-target="profile">${clean(avatarLetter())}</button></div></header>
+<header class="topbar"><div class="breadcrumb">CHRONIKA <span> / </span> ${({home:'PULPIT',campaign:'KAMPANIA',quick:'SZYBKA GRA',arena:'ARENA',game:'ROZGRYWKA',result:'WYNIK',auth:'TWOJE KONTO',profile:'MÓJ PROFIL',admin:'PANEL ADMINA'})[state.page]||'PULPIT'}</div><div class="top-right"><span class="online-tag"><i></i>${state.cloudState==='connected'?(isMember()?'ZAPIS ONLINE':'TRYB GOŚCIA'):state.cloudState==='connecting'?'ŁĄCZENIE…':'ZAPIS LOKALNY'}</span><div class="top-points">${icon('star')} <strong>${c.stars}</strong><span> / ${c.maxStars}</span></div><button class="top-avatar top-avatar-button" aria-label="Otwórz profil" data-action="navigate" data-target="profile">${clean(avatarLetter())}</button></div></header>
 <main id="main-content">${inner}</main>
-<footer class="mobile-footer">${nav('home','⌂','Start')}${nav('campaign','◈','Kampania')}${nav('quick','⌁','Szybka')}${nav('arena','♜','Arena')}${nav('profile','♙','Profil')}</footer>
+<footer class="mobile-footer">${nav('home','⌂','Start')}${nav('campaign','◈','Kampania')}${nav('quick','⌁','Szybka')}${nav('arena','♜','Arena')}${nav('profile','♙','Profil')}${state.adminAllowed?nav('admin','⚙','Admin'):''}</footer>
 </div>
 </div>${state.toast?`<div class="toast" role="status">${clean(state.toast)}</div>`:''}`;}
 function nav(key,symbol,label){const active=state.page===key?'active':'';return `<button class="nav-item ${active}" data-action="navigate" data-target="${key}" ${active?'aria-current="page"':''}><span class="nav-symbol">${symbol}</span><span>${label}</span>${active?'<span class="active-dot"></span>':''}</button>`;}
@@ -120,6 +123,7 @@ function profilePage() {
     <section class="player-panel"><h2>Według trybu</h2><p>Sprawdź swoje najmocniejsze mechaniki.</p>${modes}</section>
     <section class="player-panel"><h2>Ostatnie rozgrywki</h2><p>Historia ostatnich ośmiu zakończonych sesji.</p>${recent||'<div class="player-empty">Jeszcze nie ukończono żadnej rozgrywki.</div>'}</section>
   </div>
+  ${guest?'':`<section class="player-panel player-settings"><h2>Dostęp do panelu admina</h2><p>Twój identyfikator Firebase UID (potrzebny do jednorazowego nadania uprawnień):</p><div class="player-uid"><code>${clean(who())}</code><button class="btn btn-outline" data-action="copy-uid">Kopiuj UID</button></div>${state.adminAllowed?'<button class="btn btn-primary" data-action="navigate" data-target="admin">Otwórz panel admina ↗</button>':''}</section>`}
   ${guest?'':`<section class="player-panel player-settings"><h2>Ustawienia profilu</h2><p>Możesz zmienić nick widoczny w CHRONICE.</p><form id="nickname-form"><label>Twój nick<input type="text" name="nickname" required minlength="2" maxlength="24" value="${clean(name)}"></label><button class="btn btn-outline" type="submit" ${state.authPending?'disabled':''}>Zapisz nick</button></form></section>`}
   `;
 }
@@ -143,10 +147,11 @@ async function finishRun(){const r=state.run,stars= r.stageId?awardStageProgress
  state.result={...r,earnedStars:stars?.stars||0,gainedStars:stars?.gained||0};state.run=null;state.page='result';render();window.scrollTo(0,0);
 }
 function result(){const r=state.result;if(!r)return home();const ratio=Math.round(r.correct/r.rounds*100);return `<div class="result-page"><span class="result-orbit">✧</span><div class="kicker">SESJA ZAKOŃCZONA</div><h1>${ratio>=80?'Mistrz chronologii.':ratio>=50?'Coraz bliżej prawdy.':'Każda epoka uczy.'}</h1><p>Dobry refleks jest ważny, ale prawdziwym atutem jest wiedza. Przed Tobą kolejne rozdziały.</p>${r.stageId?`<div class="result-stars">${stars(r.earnedStars)}</div>`:''}<div class="result-stat-grid"><div><small>POPRAWNE ODPOWIEDZI</small><strong>${r.correct} <span>/ ${r.rounds}</span></strong></div><div><small>SKUTECZNOŚĆ</small><strong>${ratio}%</strong></div><div><small>NOWE XP</small><strong>+${r.gainedStars*20}</strong></div></div>${r.stageId&&r.earnedStars===0?'<p class="result-tip">Aby odblokować kolejny etap, zdobądź przynajmniej jedną gwiazdkę (minimum 35% poprawnych odpowiedzi).</p>':''}<div class="result-actions"><button class="btn btn-primary" data-action="replay">Spróbuj ponownie ↗</button><button class="btn btn-outline" data-action="navigate" data-target="${r.stageId?'campaign':'quick'}">${r.stageId?'Mapa kampanii':'Szybka gra'}</button></div></div>`;}
-function render(){const view=state.page==='home'?home():state.page==='campaign'?campaign():state.page==='quick'?quick():state.page==='arena'?arena():state.page==='game'?game():state.page==='auth'?authPage():state.page==='profile'?profilePage():result();app.innerHTML=renderShell(view);}
+function render(){const view=state.page==='home'?home():state.page==='campaign'?campaign():state.page==='quick'?quick():state.page==='arena'?arena():state.page==='game'?game():state.page==='auth'?authPage():state.page==='profile'?profilePage():state.page==='admin'&&state.adminAllowed&&state.adminPanel?state.adminPanel.render():result();app.innerHTML=renderShell(view);if(state.page==='admin'&&state.adminPanel)state.adminPanel.bind(document.getElementById('admin-panel'));}
 app.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||el.disabled)return;
  const action=el.dataset.action;
+ if(action==='copy-uid'){try{await navigator.clipboard.writeText(who()||'');notice('UID skopiowany.');}catch{notice('Zaznacz UID w profilu i skopiuj ręcznie.');}return;}
  if(action==='auth-open'){state.authMode=el.dataset.mode||'login';state.authError='';state.page='auth';render();return;}
  if(action==='auth-mode'){state.authMode=el.dataset.mode||'login';state.authError='';render();return;}
  if(action==='guest'){state.page='home';state.authError='';render();return;}
@@ -158,7 +163,9 @@ app.addEventListener('click',async event=>{
    finally{state.authPending=false;render();}
    return;
  }
- if(action==='navigate'){state.page=el.dataset.target;state.toast=null;render();window.scrollTo(0,0);return;}
+ if(action==='navigate'){const target=el.dataset.target;
+   if(target==='admin'&&!state.adminAllowed)return;
+   state.page=target;state.toast=null;render();window.scrollTo(0,0);return;}
  if(action==='chapter'){state.page='campaign';render();setTimeout(()=>document.querySelectorAll('.chapter')[CHAPTERS.findIndex(c=>c.id===el.dataset.chapter)]?.scrollIntoView({block:'start',behavior:'smooth'}),50);return;}
  if(action==='category'){state.category=el.dataset.category;render();return;}
  if(action==='type'){state.type=el.dataset.type;render();return;}
@@ -179,6 +186,7 @@ document.addEventListener('keydown',e=>{
 // Use separate local caches per Firebase UID, never mixing two accounts.
 async function onSession(session) {
   const token=++state.loadingSession, previousUid=who(),nextUid=session?.uid||null;
+  state.adminAllowed=false;state.adminPanel=null;
   if(previousUid!==nextUid) {
     state.progress=readLocalProgress(nextUid);
     state.stats=readLocalStats(nextUid);
@@ -204,6 +212,12 @@ async function onSession(session) {
     saveLocalStats(state.stats,nextUid);
     state.profile=profile||(!session.anonymous?{displayName:session.name||'Odkrywca'}:null);
     state.cloudState='connected';
+    if(!session.anonymous&&await state.firebase.admin.canEdit()){
+      if(token!==state.loadingSession||who()!==nextUid)return;
+      state.adminAllowed=true;
+      state.adminPanel=createAdminPanel(state.firebase.admin);
+      state.adminPanel.load().catch(err=>console.warn('CHRONIKA admin load:',err));
+    }
     // Save missing or locally-advanced campaign data after a reconnect.
     const localStages=JSON.stringify(merged.stages);
     const remoteStages=JSON.stringify(remoteProgress?.stages||{});
