@@ -89,6 +89,18 @@ export function createAdminDb(dbSdk, db, auth) {
     await batch.commit();
     return SEED_CATEGORIES.length;
   }
+  async function existingEventIds(ids){
+    await requireAdmin();
+    if(!Array.isArray(ids)||ids.length>150)throw new Error('Limit sprawdzenia to 150 wydarzeń.');
+    const cleanIds=[...new Set(ids.filter(id=>typeof id==='string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]{1,139}$/.test(id)))];
+    const found=[];
+    for(let offset=0;offset<cleanIds.length;offset+=15){
+      const batch=cleanIds.slice(offset,offset+15);
+      const docs=await Promise.all(batch.map(id=>dbSdk.getDoc(dbSdk.doc(events,id))));
+      docs.forEach((snapshot,i)=>{if(snapshot.exists())found.push(batch[i]);});
+    }
+    return found;
+  }
   async function importEvents(records){
     const user=await requireAdmin();
     if(!Array.isArray(records)||!records.length)throw new Error('Brak wydarzeń do importu.');
@@ -132,5 +144,5 @@ export function createAdminDb(dbSdk, db, auth) {
     }));
     return importEvents(docs);
   }
-  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents};
+  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds};
 }

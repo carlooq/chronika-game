@@ -130,3 +130,21 @@
 .admin-hint{font-size:11px!important;line-height:1.7;margin:10px 0;color:#8ca9a6}
 @media(max-width:960px){.admin-filters{grid-template-columns:1fr 1fr}.admin-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:640px){.admin-head{padding:20px}.admin-panel-card{padding:13px}.admin-toolbar{align-items:flex-start;flex-direction:column}.admin-filters{grid-template-columns:1fr 1fr}.admin-filters label{grid-column:1/-1}.admin-form-grid{grid-template-columns:1fr}.admin-form-grid .wide{grid-column:1}.admin-editor{padding:14px}.admin-tabs button{padding:10px 13px}.admin-pages{gap:6px}.admin-pages .btn{padding:9px}.admin-table{min-width:630px}}
+
+
+/* Wikidata acquisition / editorial preview */
+.admin-wikidata-form{display:grid;grid-template-columns:1.35fr repeat(3,minmax(105px,1fr)) auto;gap:12px;align-items:end;margin:20px 0 13px}
+.admin-wikidata-form label{display:grid;gap:7px;color:#a9c5bc;font-size:11px;font-weight:800}
+.admin-wikidata-form button{min-width:155px}
+.admin-wikidata-explain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:20px 0}
+.admin-wikidata-explain span{font-size:10px;font-weight:800;border:1px solid #354d49;background:#1b302f;color:#c6dfd2;border-radius:10px;padding:11px}
+.admin-wikidata-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:19px 0 6px}
+.admin-wikidata-stats span{font-size:10px;color:#afc4ba;background:#162a31;border:1px solid #294743;padding:12px;border-radius:10px}
+.admin-wikidata-stats b{display:block;font:700 25px 'Space Grotesk';color:#e5f5e8}
+.admin-wikidata-table td{max-width:400px}
+.admin-wikidata-table input[type=checkbox]{width:18px;height:18px;accent-color:#aedca4;cursor:pointer}
+.admin-wikidata-table .wd-duplicate{opacity:.52}
+.admin-wikidata-table .wd-duplicate input{cursor:not-allowed}
+.admin-wikidata-preview{border-top:1px solid #314541;margin-top:20px;padding-top:8px}
+@media(max-width:1250px){.admin-wikidata-form{grid-template-columns:repeat(4,minmax(0,1fr))}.admin-wikidata-form button{grid-column:1/-1}.admin-wikidata-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.admin-wikidata-form{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-wikidata-form label:first-child{grid-column:1/-1}.admin-wikidata-explain{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-wikidata-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-wikidata-table{min-width:720px}}

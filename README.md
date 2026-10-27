@@ -2,6 +2,12 @@
 
 **Osobny projekt**, niezależny od HITSTERIADY. Pierwsza grywalna wersja dla 1 gracza, gotowa do hostowania na Vercel i połączenia z *nowym* projektem Firebase. Nazwa i grafika są robocze.
 
+## Importer Wikidata (MVP 0.4 — pierwsze źródło)
+
+W **Panel admina → Wikidata** można pobierać partie 25, 50 lub 100 propozycji dla Historii Polski, Historii świata i Nauki w wybranym przedziale lat. Podgląd pokazuje opisy, lata, źródła, braki i istniejące ID w Firestore. Admin zaznacza rekordy i zapisuje je **wyłącznie jako szkice** do weryfikacji — nic nie trafia automatycznie do gry.
+
+**Nie wymaga nowych ustawień Firebase.** Dane zapisują się w istniejącej, admin-only kolekcji `chronikaEvents`. Zobacz [instrukcję importera](docs/ADMIN_PANEL.md#wikidata--pierwszy-importer-źródeł-mvp). To MVP pipeline, nie pobranie wszystkich wydarzeń w Wikidata ani automatyczna publikacja dziesiątek tysięcy pytań.
+
 ## Panel admina i rozbudowa bazy (MVP 0.3)
 
 Nowy panel administracyjny zarządza kategoriami oraz wydarzeniami w odrębnych kolekcjach Firebase. Dostęp ma tylko konto z ręcznie przyznanym wpisem admina. **[Instrukcja uruchomienia panelu i nadawania dostępu](docs/ADMIN_PANEL.md)**.

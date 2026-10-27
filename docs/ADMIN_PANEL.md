@@ -59,3 +59,34 @@ Rekordy importowane bez statusu trafiają do **Szkiców**. Import nie nadpisuje 
 - Eksport pobiera dane stronami po 100; przy dużej bazie to operacja kosztująca odczyty Firestore.
 - Wyszukiwanie po tytule działa jako **prefiks**, nie pełnotekstowo. Wyszukiwanie plus filtr kategorii sprawdza tę kategorię w obrębie bieżącej strony wyników tytułu. Pełnotekstowe indeksowanie dodamy, jeśli baza osiągnie tysiące rekordów.
 - Baza 84 kategorii to gotowa struktura redakcyjna, **nie 84 talie z tysiącami prawdziwych pytań**. Masowy import i weryfikacja faktów pozostają osobnymi pracami.
+
+## Wikidata — pierwszy importer źródeł (MVP)
+
+W panelu administratora przejdź do **Wikidata**, wybierz:
+- **Historia Polski**: elementy oznaczone krajem Polska (P17) i datą wydarzenia (P585).
+- **Historia świata**: wydarzenia (Q1190554 i podklasy) z datą (P585).
+- **Nauka i odkrycia**: obiekty z datą odkrycia/wynalezienia (P575).
+
+Ustaw lata (obsługiwane 1000–2030) i małą partię **25 / 50 / 100**. Zalecane są zakresy 5–20 lat; duże przekroje są znacznie cięższe dla publicznego serwisu Wikidata. Kliknij **Pobierz propozycje**. Zobaczysz tytuły, daty, krótki opis (jeśli Wikidata go zawiera), link QID do źródła, braki i status duplikatów.
+
+Zaznacz pozycje (lub kliknij „Zaznacz nowe”), a potem „**Zapisz szkice w Firebase**”. Zapis jest uruchamiany dopiero po dodatkowym potwierdzeniu. Po zaimportowaniu wróć do zakładki **Wydarzenia** i dokonaj redakcyjnej weryfikacji: opis, sens daty, nazwa i wiarygodność źródła. Surowe propozycje **nie są automatycznie publikowane**.
+
+### Deduplicacja i ograniczenia
+- ID jest stabilne: **Wikidata Q123** → `wikidata-q123`.
+- Importer przed pokazaniem wyników sprawdza, czy ID już istnieje w Firestore, i oznacza ponowne wystąpienia nazwy+roku w danej partii.
+- Przy zapisie Firestore pomija rekordy o istniejącym ID, nie nadpisując wykonanych poprawek.
+- To pierwsza wersja deduplikacji, nie rozpoznaje wszystkich synonimów lub identycznych wydarzeń o innych QID. Weryfikacja redakcyjna nadal jest potrzebna.
+- Wyniki z dużego zakresu lat nie są losową, reprezentatywną próbką historii — ręcznie zmieniaj okna lat i sprawdzaj różnorodność.
+- Skrypt wykonuje **jedno kontrolowane zapytanie** na żądanie w przeglądarce administratora, bez podawania surowego SPARQL. Jeśli Wikidata zwróci 429 lub timeout, poczekaj i użyj węższego zakresu. Publiczny serwis limituje czas i przepustowość: https://www.mediawiki.org/wiki/Wikidata_query_service/Implementation.
+- Źródło: Wikidata (dane CC0). Link do QID to **wskazanie pochodzenia danych**, nie dowód poprawności każdej daty. Ważne rekordy wymagają sprawdzenia w źródłach historycznych/naukowych.
+- Aktualny katalog nadal jest prywatny dla administratora; nie udostępniamy ukrytych odpowiedzi przyszłego multiplayera.
+- Te narzędzia używają istniejącej kolekcji `chronikaEvents` i **nie wymagają kolejnej zmiany reguł Firestore**, jeśli najnowsze reguły panelu są już opublikowane.
+
+### Przykładowy przepływ
+1. Historia Polski → 1980–1989 → 25 → Pobierz.
+2. Otwórz linki Wikidata przy wybranych rekordach i usuń błędne pozycje z zaznaczenia.
+3. Zapisz szkice.
+4. Wydarzenia → wyszukaj tytuł → uzupełnij źródła i popraw polski opis, następnie ustaw „Do weryfikacji” lub „Zatwierdzone” po sprawdzeniu.
+5. Kontynuuj z nowym okresem, np. 1990–1999.
+
+**Następne kroki techniczne:** zbiorcza kolejka redakcyjna, raport pokrycia dekad, dalsze importery tematyczne, pełniejsza deduplikacja po tożsamości wydarzenia, w końcu osobna publikacja zweryfikowanej bazy do gry.

@@ -1,4 +1,5 @@
 import { parseEventImport, slugify, CATEGORY_STATUSES, EVENT_STATUSES } from './catalog.js';
+import { WIKIDATA_SCOPES, WIKIDATA_LIMITS, fetchWikidataCandidates, identifyCandidateDuplicates } from './wikidataImporter.js';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labelStatus=s=>({draft:'Szkic',review:'Do weryfikacji',published:'Zatwierdzone',archived:'Archiwum'})[s]||s;
 const option=(value,label,selected)=>`<option value="${esc(value)}" ${selected?'selected':''}>${esc(label)}</option>`;
@@ -7,6 +8,7 @@ export function createAdminPanel(api) {
   const state={
     tab:'events',categories:[],events:[],loaded:false,busy:false,error:'',info:'',
     edit:null,query:'',categoryFilter:'',cursor:null,hasMore:false,previous:[],page:1,
+    wikidata:{scope:'poland',from:'1900',to:'2026',limit:50,items:[],received:0,rejected:0,hasPreview:false},
   };
   let root=null;
   function notify(message,error=false){state.error=error?message:'';state.info=error?'':message;update();}
@@ -98,10 +100,68 @@ export function createAdminPanel(api) {
       <button class="btn btn-outline" data-admin="export" ${state.busy?'disabled':''}>Eksport całego katalogu do JSON</button>
     </section>`;
   }
+
+  function wikidataView(){
+    const wd=state.wikidata;
+    const eligible=wd.items.filter(e=>e.selected&&!e.alreadyStored&&!e.duplicateInBatch);
+    const duplicateCount=wd.items.filter(e=>e.alreadyStored||e.duplicateInBatch).length;
+    const noDescription=wd.items.filter(e=>!e.description).length;
+    const isReady=state.categories.some(c=>c.id===WIKIDATA_SCOPES[wd.scope].categoryId);
+    return `<section class="admin-panel-card admin-wikidata">
+      <div class="admin-toolbar"><div><h2>Pozyskiwanie wydarzeń · Wikidata</h2>
+      <p>Pobierz propozycje i zatwierdź je redakcyjnie przed użyciem w CHRONICE.</p></div>
+      <a href="https://www.wikidata.org/" target="_blank" rel="noopener noreferrer" class="admin-link">Wikidata ↗</a></div>
+      <form id="admin-wikidata-form" class="admin-wikidata-form">
+        <label>Dziedzina<select name="scope">
+          ${Object.entries(WIKIDATA_SCOPES).map(([id,item])=>option(id,item.label,wd.scope===id)).join('')}
+        </select></label>
+        <label>Od roku<input name="startYear" type="number" min="1000" max="2030" required value="${esc(wd.from)}"></label>
+        <label>Do roku<input name="endYear" type="number" min="1000" max="2030" required value="${esc(wd.to)}"></label>
+        <label>Rozmiar partii<select name="limit">
+          ${WIKIDATA_LIMITS.map(n=>option(n,n+' rekordów',Number(wd.limit)===n)).join('')}
+        </select></label>
+        <button class="btn btn-primary" type="submit" ${state.busy?'disabled':''}>
+          ${state.busy?'Pobieranie…':'Pobierz propozycje ↗'}</button>
+      </form>
+      <p class="admin-hint">${esc(WIKIDATA_SCOPES[wd.scope].help)}. Wyniki zależą od dostępności pól w Wikidata — nie są kompletną historią danej dziedziny.</p>
+      ${!isReady?'<div class="admin-alert error">Nie znaleziono kategorii docelowej. Najpierw utwórz katalog startowy.</div>':''}
+      <div class="admin-wikidata-explain">
+        <span>1 · Pobierz dane</span><span>2 · Odrzuć słabe propozycje</span><span>3 · Zapisz jako szkice</span><span>4 · Zweryfikuj i zatwierdź</span>
+      </div>
+      ${wd.hasPreview?`<div class="admin-wikidata-preview">
+        <div class="admin-wikidata-stats">
+          <span><b>${wd.received}</b> wyników z Wikidata</span>
+          <span><b>${wd.items.length}</b> poprawnie odczytanych</span>
+          <span><b>${duplicateCount}</b> duplikatów / już zapisanych</span>
+          <span><b>${noDescription}</b> bez opisu</span>
+          <span><b>${eligible.length}</b> zaznaczonych</span>
+        </div>
+        <div class="admin-import-actions">
+          <button data-admin="wd-select-all" class="btn btn-outline" ${state.busy?'disabled':''}>Zaznacz nowe</button>
+          <button data-admin="wd-select-none" class="btn btn-outline" ${state.busy?'disabled':''}>Odznacz wszystkie</button>
+          <button data-admin="wd-import" class="btn btn-primary" ${!eligible.length||state.busy?'disabled':''}>Zapisz ${eligible.length} szkiców w Firebase</button>
+        </div>
+        <div class="admin-table-scroll"><table class="admin-table admin-wikidata-table">
+          <thead><tr><th>Wybierz</th><th>Proponowane wydarzenie</th><th>Rok</th><th>Ocena</th><th>Źródło</th></tr></thead>
+          <tbody>${wd.items.map(e=>`<tr class="${e.alreadyStored||e.duplicateInBatch?'wd-duplicate':''}">
+            <td><input type="checkbox" data-wd-id="${esc(e.id)}" aria-label="Wybierz ${esc(e.title)}"
+              ${e.selected?'checked':''} ${e.alreadyStored||e.duplicateInBatch||state.busy?'disabled':''}></td>
+            <td><strong>${esc(e.title)}</strong>
+              <small>${esc(e.description||'Brak opisu — wymaga uzupełnienia')}</small></td>
+            <td>${esc(e.year)}</td>
+            <td>${e.alreadyStored?'<span class="admin-state archived">Już w bazie</span>':e.duplicateInBatch?'<span class="admin-state archived">Duplikat</span>':e.flags?.length?`<span class="admin-state review" title="${esc(e.flags.join(' • '))}">Sprawdź opis</span>`:'<span class="admin-state draft">Do weryfikacji</span>'}</td>
+            <td><a href="${esc(e.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="admin-link">${esc(e.qid)} ↗</a></td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <p class="admin-hint">${wd.rejected} wyników pominięto z powodu brakującego ID, etykiety lub poprawnej daty. Weryfikuj daty i kontekst, zanim zmienisz status na „Zatwierdzone”.</p>
+      </div>`:'<div class="admin-empty">Pobierz pierwszą partię, aby zobaczyć propozycje. Nic nie zostanie zapisane bez Twojego wyboru.</div>'}
+    </section>`;
+  }
+
   function render(){
     const head=`<header class="admin-head"><div><span class="kicker">CHRONIKA · NARZĘDZIA REDAKCYJNE</span><h1>Centrum danych</h1><p>Jedna baza wydarzeń, wiele kategorii. Panel dostępny wyłącznie upoważnionym kontom.</p></div><div class="admin-head-actions"><button data-admin="refresh" class="btn btn-outline">Odśwież</button><button data-admin="export" class="btn btn-outline">Eksport JSON</button></div></header>`;
     const tabs=`<div class="admin-tabs">
-      ${[['events','Wydarzenia'],['categories','Kategorie'],['import','Import / eksport']].map(([tab,name])=>`<button data-admin="tab" data-tab="${tab}" class="${state.tab===tab?'active':''}">${name}</button>`).join('')}
+      ${[['events','Wydarzenia'],['categories','Kategorie'],['wikidata','Wikidata'],['import','Import / eksport']].map(([tab,name])=>`<button data-admin="tab" data-tab="${tab}" class="${state.tab===tab?'active':''}">${name}</button>`).join('')}
     </div>`;
     const alert=`${state.error?`<div class="admin-alert error" role="alert">${esc(state.error)}</div>`:''}${state.info?`<div class="admin-alert success" role="status">${esc(state.info)}</div>`:''}`;
     let body='';
@@ -120,6 +180,7 @@ export function createAdminPanel(api) {
       <div class="admin-pages"><button class="btn btn-outline" data-admin="prev" ${state.page<=1||state.busy?'disabled':''}>← Poprzednia</button><span>Strona ${state.page}</span><button class="btn btn-outline" data-admin="next" ${!state.hasMore||state.busy?'disabled':''}>Następna →</button></div>
     </section>`;
     }
+    else if(state.tab==='wikidata')body=wikidataView();
     else body=importView();
     return `<div id="admin-panel" class="admin-panel">${head}${tabs}${alert}${state.loaded?body:'<div class="admin-empty">Ładowanie katalogu Firebase…</div>'}</div>`;
   }
@@ -182,6 +243,27 @@ export function createAdminPanel(api) {
     if(action==='prev'&&state.page>1){
       await run(async()=>{state.cursor=state.previous.pop()??null;state.page--;await loadEvents();});return;
     }
+
+    if(action==='wd-select-all'){
+      state.wikidata.items=state.wikidata.items.map(e=>({...e,selected:!e.alreadyStored&&!e.duplicateInBatch}));
+      update();return;
+    }
+    if(action==='wd-select-none'){
+      state.wikidata.items=state.wikidata.items.map(e=>({...e,selected:false}));
+      update();return;
+    }
+    if(action==='wd-import'){
+      const selected=state.wikidata.items.filter(e=>e.selected&&!e.alreadyStored&&!e.duplicateInBatch);
+      if(!selected.length)return;
+      if(!confirm('Zapisać '+selected.length+' propozycji jako SZKICE w Firebase? Żadna nie trafi automatycznie do gry.'))return;
+      await run(async()=>{
+        const result=await api.importEvents(selected.map(e=>({...e,status:'draft'})));
+        const savedIds=new Set(selected.map(e=>e.id));
+        state.wikidata.items=state.wikidata.items.map(e=>savedIds.has(e.id)?{...e,selected:false,alreadyStored:true}:e);
+        state.info='Wikidata: dodano '+result.added+' szkiców, pominięto '+result.skipped+' istniejących.';
+        await loadEvents(true);
+      });return;
+    }
     if(action==='seed-categories'){
       if(!confirm('Utworzyć 84 robocze kategorie w Firebase? Działa tylko przy pustej kolekcji.'))return;
       await run(async()=>{const n=await api.importCategories();state.categories=await api.listCategories();state.info='Utworzono '+n+' kategorii.';},null);return;
@@ -193,9 +275,27 @@ export function createAdminPanel(api) {
     if(action==='export'){await run(exportAll,'Eksport katalogu gotowy.');return;}
   }
   async function submit(event){
-    if(!['admin-category-form','admin-event-form','admin-import-form','admin-filter-form'].includes(event.target.id))return;
+    if(!['admin-category-form','admin-event-form','admin-import-form','admin-filter-form','admin-wikidata-form'].includes(event.target.id))return;
     event.preventDefault();
     const form=event.target,formId=form.id,fd=new FormData(form);
+
+    if(formId==='admin-wikidata-form'){
+      const scope=String(fd.get('scope')||'poland');
+      const startYear=Number(fd.get('startYear')),endYear=Number(fd.get('endYear'));
+      const limit=Number(fd.get('limit'));
+      state.wikidata={scope,from:String(startYear),to:String(endYear),limit,items:[],received:0,rejected:0,hasPreview:false};
+      await run(async()=>{
+        if(!state.categories.some(c=>c.id===WIKIDATA_SCOPES[scope]?.categoryId)){
+          throw new Error('Najpierw załóż kategorię docelową w panelu kategorii.');
+        }
+        const result=await fetchWikidataCandidates({scope,startYear,endYear,limit});
+        const existing=result.items.length?await api.existingEventIds(result.items.map(e=>e.id)):[];
+        state.wikidata.items=identifyCandidateDuplicates(result.items,existing);
+        state.wikidata.received=result.received;state.wikidata.rejected=result.rejected;
+        state.wikidata.hasPreview=true;
+        state.info='Pobrano '+result.received+' wyników. Wybierz rekordy do zapisania jako szkice.';
+      });return;
+    }
     if(formId==='admin-filter-form'){
       state.query=String(fd.get('query')||'').trim();
       state.categoryFilter=String(fd.get('filterCategory')||'');
@@ -239,7 +339,16 @@ export function createAdminPanel(api) {
       }catch(error){notify(error.message,true);}
     }
   }
-  function bind(element){root=element;root.onclick=event=>{click(event).catch(error=>notify(error.message,true));};
-    root.onsubmit=event=>{submit(event).catch(error=>notify(error.message,true));};}
+  function bind(element){root=element;
+    root.onclick=event=>{click(event).catch(error=>notify(error.message,true));};
+    root.onsubmit=event=>{submit(event).catch(error=>notify(error.message,true));};
+    root.onchange=event=>{
+      const input=event.target.closest('[data-wd-id]');
+      if(!input||input.disabled)return;
+      const record=state.wikidata.items.find(e=>e.id===input.dataset.wdId);
+      if(record)record.selected=!!input.checked;
+      update();
+    };
+  }
   return {render,bind,load,state};
 }
