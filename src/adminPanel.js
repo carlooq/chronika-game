@@ -9,6 +9,7 @@ export function createAdminPanel(api) {
     tab:'events',categories:[],events:[],loaded:false,busy:false,error:'',info:'',
     edit:null,query:'',categoryFilter:'',cursor:null,hasMore:false,previous:[],page:1,
     wikidata:{scope:'poland',from:'1900',to:'2026',limit:50,items:[],received:0,rejected:0,hasPreview:false},
+    curatedCleanup:{checked:false,found:0,totalSourceIds:38,changes:[]},
   };
   let root=null;
   function notify(message,error=false){state.error=error?message:'';state.info=error?'':message;update();}
@@ -98,6 +99,29 @@ export function createAdminPanel(api) {
       <p class="admin-hint">W CSV obowiązkowe nagłówki: <code>title,year,categoryIds</code>. Pozostałe: <code>id,description,status,difficulty,sourceName,sourceUrl,tags</code>. Wielokrotne kategorie oddziel średnikami (pole CSV ujmij w cudzysłów).</p>
       <p class="admin-hint">Wszystkie importowane dane powinny mieć weryfikowalne daty i prawa do treści. Pierwsze próbne wydarzenia są oznaczone jako szkice do weryfikacji.</p>
       <button class="btn btn-outline" data-admin="export" ${state.busy?'disabled':''}>Eksport całego katalogu do JSON</button>
+    </section>
+    <section class="admin-panel-card admin-import">
+      <h2>Porządkowanie tagów · Historia Polski V1</h2>
+      <p>Jednorazowa korekta pierwszej paczki 38 wydarzeń. Usuwa z pola tagi wyłącznie oznaczenia techniczne i poziomy rozpoznawalności:
+        <code>kuratorskie-pl-v1</code>, <code>ikoniczne</code>, <code>znane</code>.
+        Nie zmienia tytułów, dat, opisów, statusów, kategorii ani źródeł.</p>
+      <div class="admin-import-actions">
+        <button class="btn btn-outline" data-admin="curated-preview" ${state.busy?'disabled':''}>Sprawdź te 38 rekordów</button>
+        ${state.curatedCleanup.checked&&state.curatedCleanup.changes.length?
+          `<button class="btn btn-primary" data-admin="curated-clean" ${state.busy?'disabled':''}>Wyczyść tagi w ${state.curatedCleanup.changes.length} rekordach</button>`:''}
+      </div>
+      ${state.curatedCleanup.checked?`
+        <p class="admin-hint">Znaleziono w Firebase: <b>${state.curatedCleanup.found}</b> z 38. Wymaga zmiany: <b>${state.curatedCleanup.changes.length}</b>.
+        ${state.curatedCleanup.changes.length?'Zachowane zostaną wszystkie inne tagi.':'Nie ma już nic do poprawienia.'}</p>
+        ${state.curatedCleanup.changes.length?`<div class="admin-table-scroll">
+          <table class="admin-table"><thead><tr><th>Wydarzenie</th><th>Usuwane oznaczenia</th><th>Pozostaje</th></tr></thead>
+          <tbody>${state.curatedCleanup.changes.map(e=>`<tr>
+            <td><strong>${esc(e.title)}</strong></td>
+            <td>${esc(e.beforeTags.filter(x=>!e.afterTags.includes(x)).join(', '))}</td>
+            <td>${esc(e.afterTags.join(', ')||'Brak tagów tematycznych')}</td>
+          </tr>`).join('')}</tbody></table></div>`:''}
+      `:''}
+      <p class="admin-hint">Oryginalne oceny rozpoznawalności z paczki zachowaliśmy w kodzie projektu, aby później dodać osobne pole. Nie musisz edytować dokumentów w Firebase ręcznie ani zmieniać reguł.</p>
     </section>`;
   }
 
@@ -262,6 +286,26 @@ export function createAdminPanel(api) {
         state.wikidata.items=state.wikidata.items.map(e=>savedIds.has(e.id)?{...e,selected:false,alreadyStored:true}:e);
         state.info='Wikidata: dodano '+result.added+' szkiców, pominięto '+result.skipped+' istniejących.';
         await loadEvents(true);
+      });return;
+    }
+    if(action==='curated-preview'){
+      await run(async()=>{
+        const preview=await api.previewCuratedV1Cleanup();
+        state.curatedCleanup={...preview,checked:true};
+        state.info=preview.changes.length?
+          'Znaleziono '+preview.changes.length+' rekordów do uporządkowania. Sprawdź podgląd.':
+          'Wszystkie znalezione rekordy tej paczki mają już uporządkowane tagi.';
+      });return;
+    }
+    if(action==='curated-clean'){
+      const count=state.curatedCleanup.checked?state.curatedCleanup.changes.length:0;
+      if(!count)return;
+      if(!confirm('Usunąć trzy niepotrzebne oznaczenia z tagów w '+count+
+        ' rekordach paczki Historia Polski V1? Inne pola pozostaną bez zmian.'))return;
+      await run(async()=>{
+        const result=await api.cleanupCuratedV1Tags();
+        state.curatedCleanup={...await api.previewCuratedV1Cleanup(),checked:true};
+        state.info='Uporządkowano tagi w '+result.updated+' wydarzeniach. Inne pola pozostały bez zmian.';
       });return;
     }
     if(action==='seed-categories'){

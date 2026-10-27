@@ -1,5 +1,6 @@
 import { normalizeCatalogCategory, normalizeCatalogEvent, SEED_CATEGORIES } from './catalog.js';
 import { ITEMS } from './data.js';
+import { CURATED_PL_V1_IDS, cleanCuratedV1Tags, curatedV1CleanupPreview } from './curatedCleanup.js';
 
 export function createAdminDb(dbSdk, db, auth) {
   const categories=dbSdk.collection(db,'chronikaCategories');
@@ -78,6 +79,43 @@ export function createAdminDb(dbSdk, db, auth) {
     });
     return data;
   }
+  // Reads ONLY the exact 38 source IDs, never the full database.
+  async function previewCuratedV1Cleanup(){
+    await requireAdmin();
+    const matches=[];
+    for(let offset=0;offset<CURATED_PL_V1_IDS.length;offset+=12){
+      const batch=CURATED_PL_V1_IDS.slice(offset,offset+12);
+      const docs=await Promise.all(batch.map(id=>dbSdk.getDoc(dbSdk.doc(events,id))));
+      for(let i=0;i<docs.length;i++){
+        if(docs[i].exists())matches.push({id:batch[i],...docs[i].data()});
+      }
+    }
+    return {
+      totalSourceIds:CURATED_PL_V1_IDS.length,
+      found:matches.length,
+      changes:curatedV1CleanupPreview(matches),
+    };
+  }
+  // Re-check data inside a single Firestore transaction. Only the tags and
+  // audit timestamp are modified; titles, years, descriptions remain intact.
+  async function cleanupCuratedV1Tags(){
+    const admin=await requireAdmin();
+    return dbSdk.runTransaction(db,async transaction=>{
+      const refs=CURATED_PL_V1_IDS.map(id=>dbSdk.doc(events,id));
+      const snapshots=await Promise.all(refs.map(ref=>transaction.get(ref)));
+      const changes=[];
+      snapshots.forEach((snap,i)=>{
+        if(!snap.exists())return;
+        const cleaned=cleanCuratedV1Tags(CURATED_PL_V1_IDS[i],snap.data().tags);
+        if(cleaned!==null)changes.push({ref:refs[i],cleaned});
+      });
+      const now=Date.now();
+      for(const item of changes){
+        transaction.update(item.ref,{tags:item.cleaned,updatedAt:now,updatedBy:admin.uid});
+      }
+      return {updated:changes.length,checked:snapshots.filter(s=>s.exists()).length};
+    });
+  }
   async function importCategories(){
     const user=await requireAdmin();
     const existing=await dbSdk.getDocs(dbSdk.query(categories,dbSdk.limit(1)));
@@ -144,5 +182,5 @@ export function createAdminDb(dbSdk, db, auth) {
     }));
     return importEvents(docs);
   }
-  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds};
+  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds,previewCuratedV1Cleanup,cleanupCuratedV1Tags};
 }

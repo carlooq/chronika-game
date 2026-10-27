@@ -90,3 +90,16 @@ Zaznacz pozycje (lub kliknij „Zaznacz nowe”), a potem „**Zapisz szkice w F
 5. Kontynuuj z nowym okresem, np. 1990–1999.
 
 **Następne kroki techniczne:** zbiorcza kolejka redakcyjna, raport pokrycia dekad, dalsze importery tematyczne, pełniejsza deduplikacja po tożsamości wydarzenia, w końcu osobna publikacja zweryfikowanej bazy do gry.
+
+## Jednorazowe czyszczenie tagów w Historii Polski V1
+
+W przypadku importu pierwszego pakietu redakcyjnego (38 wydarzeń) stara wersja zawierała tagi techniczne `kuratorskie-pl-v1` oraz tagi rozpoznawalności `ikoniczne` lub `znane`, które nie są właściwymi tagami tematycznymi.
+
+**Bez ręcznego edytowania dokumentów**:
+1. **Panel admina → Import / eksport → Porządkowanie tagów · Historia Polski V1**.
+2. **Sprawdź te 38 rekordów**. Panel odczyta faktyczne dokumenty z Firebase i pokaże, ile wymaga poprawy.
+3. **Wyczyść tagi w ... rekordach** i potwierdź.
+
+Narzędzie modyfikuje tylko dokładnie 38 znanych identyfikatorów z tej paczki, a także tylko listę `tags` i pola audytowe (`updatedAt`, `updatedBy`). Nie zmienia tytułu, daty, opisu, statusu, przypisania kategorii ani źródła. Inne tagi tematyczne pozostają nietknięte. Jeśli uruchomisz ponownie, pokaże 0 zmian do wykonania. Możesz pobrać ogólny eksport katalogu JSON przed czyszczeniem.
+
+Oryginalne poziomy rozpoznawalności (25 × `ikoniczne`, 13 × `znane`) są zachowane w kodzie projektu w `src/curatedCleanup.js`. W przyszłości powinny przejść do osobnego pola `recognitionLevel`; na razie nie ma potrzeby zmiany schematu ani reguł Firestore.
