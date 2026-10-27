@@ -38,7 +38,18 @@ export function createAdminPanel(api) {
       <div class="admin-editor-header"><div><span class="kicker">BAZA WYDARZEŃ</span><h2>${edit?'Edytuj wydarzenie':'Dodaj wydarzenie'}</h2></div><button class="btn btn-outline" type="button" data-admin="cancel">Anuluj</button></div>
       <div class="admin-form-grid">
         <label class="wide">Tytuł wydarzenia<input required name="title" maxlength="200" minlength="3" value="${esc(e.title||'')}" placeholder="Np. Premiera filmu..."></label>
-        <label>ID (stałe, unikalne)<input name="id" value="${esc(e.id||'')}" ${edit?'readonly':''} placeholder="Automatycznie z tytułu" maxlength="140"></label>
+        <div class="admin-technical-slot wide">
+          <details class="admin-technical">
+            <summary>Dane techniczne ${edit?'wydarzenia':'(opcjonalne)'}</summary>
+            <div class="admin-technical-inner">
+              ${edit?
+                `<p>Stały identyfikator w Firebase (nie jest widoczny dla graczy):</p>
+                <code>${esc(e.id)}</code><input type="hidden" name="id" value="${esc(e.id)}">`:
+                `<label>Własny identyfikator (opcjonalny)<input name="id" maxlength="140" placeholder="Pozostaw puste — zostanie nadany automatycznie"></label>
+                <p>Nie musisz nic tu wpisywać. Identyfikator zostanie wygenerowany z tytułu i roku.</p>`}
+            </div>
+          </details>
+        </div>
         <label>Rok (ujemny = p.n.e.)<input required name="year" type="number" min="-3000" max="2100" value="${esc(e.year??'')}"></label>
         <label>Status<select name="status">${EVENT_STATUSES.map(s=>option(s,labelStatus(s),s===status)).join('')}</select></label>
         <label>Trudność<select name="difficulty">${[1,2,3,4,5].map(n=>option(n,String(n)+' / 5',Number(e.difficulty||2)===n)).join('')}</select></label>
@@ -58,7 +69,17 @@ export function createAdminPanel(api) {
       <div class="admin-editor-header"><div><span class="kicker">STRUKTURA DZIEDZIN</span><h2>${edit?'Edytuj kategorię':'Dodaj kategorię'}</h2></div><button class="btn btn-outline" type="button" data-admin="cancel">Anuluj</button></div>
       <div class="admin-form-grid">
         <label>Nazwa<input required name="name" maxlength="100" value="${esc(e.name||'')}" placeholder="Np. Historia Polski"></label>
-        <label>ID<input name="id" value="${esc(e.id||'')}" maxlength="130" ${edit?'readonly':''} placeholder="Automatycznie z nazwy"></label>
+        <div class="admin-technical-slot wide">
+          <details class="admin-technical">
+            <summary>Dane techniczne ${edit?'kategorii':'(opcjonalne)'}</summary>
+            <div class="admin-technical-inner">
+              ${edit?
+                `<p>Stały identyfikator kategorii w Firebase:</p><code>${esc(e.id)}</code>
+                <input type="hidden" name="id" value="${esc(e.id)}">`:
+                `<label>Własny identyfikator (opcjonalny)<input name="id" maxlength="130" placeholder="Pozostaw puste, aby wygenerować"></label>`}
+            </div>
+          </details>
+        </div>
         <label>Kategoria nadrzędna<select name="parentId"><option value="">Główna dziedzina</option>
         ${state.categories.filter(c=>!c.parentId&&c.id!==e.id).map(c=>option(c.id,c.name,c.id===e.parentId)).join('')}</select></label>
         <label>Status<select name="status">${CATEGORY_STATUSES.map(s=>option(s,labelStatus(s),s===(e.status||'draft'))).join('')}</select></label>
@@ -70,14 +91,14 @@ export function createAdminPanel(api) {
   }
   function categoryRows(){
     if(!state.categories.length)return `<div class="admin-empty">Nie ma jeszcze kategorii. Kliknij „Utwórz katalog startowy”.</div>`;
-    return `<div class="admin-table-scroll"><table class="admin-table"><thead><tr><th>Kategoria</th><th>ID</th><th>Poziom</th><th>Status</th><th></th></tr></thead><tbody>
-      ${state.categories.map(c=>`<tr><td><strong>${c.parentId?'↳ ':''}${esc(c.name)}</strong></td><td><code>${esc(c.id)}</code></td><td>${c.parentId?'Podkategoria':'Dział'}</td><td><span class="admin-state ${esc(c.status||'draft')}">${labelStatus(c.status||'draft')}</span></td><td><button class="admin-link" data-admin="edit-category" data-id="${esc(c.id)}">Edytuj</button></td></tr>`).join('')}
+    return `<div class="admin-table-scroll"><table class="admin-table"><thead><tr><th>Kategoria</th><th>Poziom</th><th>Status</th><th></th></tr></thead><tbody>
+      ${state.categories.map(c=>`<tr><td><strong>${c.parentId?'↳ ':''}${esc(c.name)}</strong></td><td>${c.parentId?'Podkategoria':'Dział'}</td><td><span class="admin-state ${esc(c.status||'draft')}">${labelStatus(c.status||'draft')}</span></td><td><button class="admin-link" data-admin="edit-category" data-id="${esc(c.id)}">Edytuj</button></td></tr>`).join('')}
     </tbody></table></div>`;
   }
   function eventRows(entries){
     return `<div class="admin-table-scroll"><table class="admin-table"><thead><tr><th>Wydarzenie</th><th>Rok</th><th>Kategoria</th><th>Stan</th><th></th></tr></thead><tbody>
       ${entries.map(e=>`<tr>
-        <td><strong>${esc(e.title)}</strong><small>${esc(e.id)}</small></td><td>${esc(e.year)}</td>
+        <td><strong>${esc(e.title)}</strong></td><td>${esc(e.year)}</td>
         <td>${esc((e.categoryIds||[]).slice(0,2).map(categoryTitle).join(', '))}${(e.categoryIds||[]).length>2?'…':''}</td>
         <td><span class="admin-state ${esc(e.status||'draft')}">${labelStatus(e.status||'draft')}</span></td>
         <td><button class="admin-link" data-admin="edit-event" data-id="${esc(e.id)}">Edytuj</button></td>

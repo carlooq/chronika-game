@@ -103,3 +103,9 @@ W przypadku importu pierwszego pakietu redakcyjnego (38 wydarzeń) stara wersja 
 Narzędzie modyfikuje tylko dokładnie 38 znanych identyfikatorów z tej paczki, a także tylko listę `tags` i pola audytowe (`updatedAt`, `updatedBy`). Nie zmienia tytułu, daty, opisu, statusu, przypisania kategorii ani źródła. Inne tagi tematyczne pozostają nietknięte. Jeśli uruchomisz ponownie, pokaże 0 zmian do wykonania. Możesz pobrać ogólny eksport katalogu JSON przed czyszczeniem.
 
 Oryginalne poziomy rozpoznawalności (25 × `ikoniczne`, 13 × `znane`) są zachowane w kodzie projektu w `src/curatedCleanup.js`. W przyszłości powinny przejść do osobnego pola `recognitionLevel`; na razie nie ma potrzeby zmiany schematu ani reguł Firestore.
+
+## Czytelne nazwy zamiast technicznych identyfikatorów
+
+W zakładkach **Wydarzenia** i **Kategorie** ukryto techniczne ID z głównych tabel. Zamiast ciągu w rodzaju `kurator-pl-grunwald` widzisz tytuł wydarzenia, rok i przypisanie do kategorii. W edytorze identyfikator jest dostępny tylko po rozwinięciu sekcji **Dane techniczne**, gdzie widać go do wglądu. Dodawanie nowych wydarzeń i kategorii nie wymaga ręcznego wpisywania ID.
+
+**Ważne:** ID dokumentów Firestore nie zostały zmienione ani usunięte. Są trwałymi kluczami bazy i mogą służyć deduplikacji oraz przyszłym referencjom. Masowa zmiana kluczy wymagałaby osobnej, ostrożnie kontrolowanej migracji (kopiowanie, sprawdzenie odwołań, usunięcie starych rekordów), dlatego nie wykonujemy jej tylko z przyczyn estetycznych. Zmiana interfejsu nie narusza Twoich istniejących danych i nie wymaga nowych reguł Firebase.
