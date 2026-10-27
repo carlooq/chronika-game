@@ -109,3 +109,33 @@ Oryginalne poziomy rozpoznawalności (25 × `ikoniczne`, 13 × `znane`) są zach
 W zakładkach **Wydarzenia** i **Kategorie** ukryto techniczne ID z głównych tabel. Zamiast ciągu w rodzaju `kurator-pl-grunwald` widzisz tytuł wydarzenia, rok i przypisanie do kategorii. W edytorze identyfikator jest dostępny tylko po rozwinięciu sekcji **Dane techniczne**, gdzie widać go do wglądu. Dodawanie nowych wydarzeń i kategorii nie wymaga ręcznego wpisywania ID.
 
 **Ważne:** ID dokumentów Firestore nie zostały zmienione ani usunięte. Są trwałymi kluczami bazy i mogą służyć deduplikacji oraz przyszłym referencjom. Masowa zmiana kluczy wymagałaby osobnej, ostrożnie kontrolowanej migracji (kopiowanie, sprawdzenie odwołań, usunięcie starych rekordów), dlatego nie wykonujemy jej tylko z przyczyn estetycznych. Zmiana interfejsu nie narusza Twoich istniejących danych i nie wymaga nowych reguł Firebase.
+
+## Wybrane rocznice Wikipedii — pierwsza partia do produkcji 10 000 wydarzeń
+
+W **Panel admina → Wybrane rocznice** można pobierać anglojęzyczne, **redakcyjnie wybierane** rocznice historyczne z Wikipedii. Są lepszym punktem startowym niż surowe listy Wikidata, ale nie oznacza to automatycznej poprawności, wysokiej rozpoznawalności w Polsce ani polskiego języka.
+
+1. Ustaw **dzień rozpoczęcia**, np. `01-01` (styczeń 1).
+2. Wybierz partię **7, 14 albo 28 dni**. Jeden dzień = jedno żądanie do Wikimedia; maksymalnie dwa jednocześnie. Nie pobieramy całego roku jednym przyciskiem.
+3. Dziedzina `Historia świata` jest domyślną opcją. `Historia Polski` wybieraj wyłącznie wtedy, kiedy selekcjonujesz wyraźnie polskie wydarzenia.
+4. Przejrzyj tytuły i **oryginalne angielskie streszczenia** w podglądzie. Nie są kopiowane do Firebase.
+5. Możesz wpisać od razu **własny polski tytuł** przy wybranym rekordzie. Zaznaczaj tylko wydarzenia, które chcesz opracować.
+6. Kliknij **Zapisz szkice w Firebase**. Każdy zapisany rekord jest szkicem z pustym opisem i linkiem do źródła. W zakładce **Wydarzenia** napisz własny, rzetelny polski opis, sprawdź fakty i dopiero później zmień status.
+7. Kliknij **Następna partia**, żeby przesunąć datę startową o liczbę pobranych dni. Przy błędach HTTP panel informuje o niepobranych datach; nie uznawaj partii za kompletną.
+
+ID importera to `anniv-ROK-HASH` (stabilne dla tej samej treści i roku). Narzędzie sprawdza także istniejące ID Firestore, ale **nie potrafi jeszcze wykryć wszystkich semantycznych duplikatów** różnych źródeł. Nie zaznacza nic automatycznie.
+
+Dane z Wikipedii mają licencję CC BY-SA — nie kopiuj surowych opisów jako własnych. Zapisujemy identyfikator źródła, link do strony, rok i szkic do redakcji; opisy w bazie są celowo puste.
+
+### Statystyki: rzeczywisty postęp bazy
+
+W **Panel admina → Postęp bazy → Przelicz bazę** zobaczysz:
+- faktyczną liczbę dokumentów w `chronikaEvents`;
+- liczbę według statusu (szkice, weryfikacja, zatwierdzone, archiwum);
+- licznik w 12 głównych dziedzinach (obecnie tylko rekordy przypisane *bezpośrednio* do tej dziedziny);
+- cel 10 000 zatwierdzonych, unikalnych wydarzeń, a nie 10 000 pobranych propozycji.
+
+Odczyty są wykonywane na żądanie przez agregacje Firestore; nie trzeba pobierać tysięcy dokumentów do przeglądarki. Jeśli nie masz nadanych uprawnień administratora, nie uzyskasz dostępu do agregacji.
+
+### Ograniczenia tej iteracji
+
+Nie potwierdzono w rzeczywistej sesji Twojej przeglądarki dostępności wszystkich publicznych endpointów Wikimedii; serwis może mieć ograniczenia, awarie lub chwilowo blokować żądania. Nie ma jeszcze automatycznej polskiej redakcji AI, importerów filmów / sportu ani zaawansowanej deduplikacji semantycznej. Nie traktuj samego zapisu szkicu jako zakończonej weryfikacji wydarzenia. Importer Wikidata pozostaje dostępny, ale jest mniej selektywny.

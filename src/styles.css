@@ -160,3 +160,25 @@
 .admin-technical-inner p{font-size:11px;color:#95aaa3;line-height:1.5}
 .admin-technical-inner code{display:block;max-width:100%;overflow-wrap:anywhere;word-break:break-word;font:11px/1.5 monospace;color:#a6d8bd}
 .admin-technical-inner label{display:grid;gap:7px;font-size:11px}
+
+/* Editorial anniversary importer and real Firestore coverage dashboard */
+.admin-anniversaries-form{display:grid;grid-template-columns:1.15fr .8fr 1.1fr auto;gap:12px;align-items:end;margin:22px 0 12px}
+.admin-anniversaries-form label,.anniv-edit{display:grid;gap:7px;color:#9eaeaa;font-size:11px;font-weight:800}
+.admin-anniversaries-form .btn{white-space:nowrap}
+.admin-anniversaries-table input[type=checkbox]{width:18px;height:18px;accent-color:#9dd4af;cursor:pointer}
+.admin-anniversaries-table td:nth-child(2){min-width:310px;max-width:600px}
+.admin-anniversaries-table td:nth-child(2) small{line-height:1.5;max-width:75ch;white-space:normal}
+.admin-anniversaries-table td:first-child{width:65px}
+.admin-anniversaries-table .wd-duplicate{opacity:.53}
+.admin-anniversaries-table .anniv-edit{margin-top:12px}
+.admin-anniversaries-table .anniv-edit input{border:1px solid #3b5450;border-radius:8px;padding:9px 12px;width:100%;background:#10212a;color:#e1f1e5;font-size:12px}
+.admin-coverage-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:22px 0 16px}
+.admin-coverage-summary>div{display:grid;gap:5px;padding:18px;background:#1b3132;border-radius:11px;border:1px solid #38544e}
+.admin-coverage-summary small{font-size:10px;color:#a7bcb5}
+.admin-coverage-summary strong{font-size:28px;color:#d8f0df;font-weight:800}
+.admin-coverage-progress,.admin-mini-progress{height:12px;border-radius:100px;background:#243940;overflow:hidden}
+.admin-coverage-progress>div,.admin-mini-progress>div{height:100%;background:#92cda7;border-radius:100px}
+.admin-mini-progress{height:7px;min-width:100px}
+.admin-coverage .admin-table-scroll{margin-top:22px}
+@media(max-width:900px){.admin-anniversaries-form{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-anniversaries-form button{grid-column:1/-1}.admin-coverage-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.admin-anniversaries-form{grid-template-columns:1fr}.admin-anniversaries-form button{grid-column:auto}.admin-coverage-summary>div{padding:13px}.admin-coverage-summary strong{font-size:23px}}

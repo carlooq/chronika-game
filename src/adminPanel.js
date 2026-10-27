@@ -1,5 +1,6 @@
 import { parseEventImport, slugify, CATEGORY_STATUSES, EVENT_STATUSES } from './catalog.js';
 import { WIKIDATA_SCOPES, WIKIDATA_LIMITS, fetchWikidataCandidates, identifyCandidateDuplicates } from './wikidataImporter.js';
+import { ANNIVERSARY_DAYS, fetchSelectedAnniversaries, uniqueAnniversaryCandidates } from './anniversaryImporter.js';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labelStatus=s=>({draft:'Szkic',review:'Do weryfikacji',published:'Zatwierdzone',archived:'Archiwum'})[s]||s;
 const option=(value,label,selected)=>`<option value="${esc(value)}" ${selected?'selected':''}>${esc(label)}</option>`;
@@ -10,6 +11,9 @@ export function createAdminPanel(api) {
     edit:null,query:'',categoryFilter:'',cursor:null,hasMore:false,previous:[],page:1,
     wikidata:{scope:'poland',from:'1900',to:'2026',limit:50,items:[],received:0,rejected:0,hasPreview:false},
     curatedCleanup:{checked:false,found:0,totalSourceIds:38,changes:[]},
+    anniversaries:{startDay:'01-01',days:14,target:'world',items:[],received:0,rejected:0,
+      succeeded:0,failed:[],requested:0,hasPreview:false,nextDay:'01-15',progress:null},
+    coverage:null,
   };
   let root=null;
   function notify(message,error=false){state.error=error?message:'';state.info=error?'':message;update();}
@@ -203,10 +207,98 @@ export function createAdminPanel(api) {
     </section>`;
   }
 
+
+  const categoryTargets={
+    cinema:1400,world:1050,games:1000,television:900,sport:850,football:850,
+    technology:750,literature:750,science:700,poland:650,culture:600,geography:500,
+  };
+  function coverageView(){
+    const coverage=state.coverage;
+    return `<section class="admin-panel-card admin-coverage">
+      <div class="admin-toolbar"><div><h2>Rzeczywisty stan bazy</h2>
+        <p>Liczymy dokumenty z Firebase, nie pobrane propozycje. Cel: 10 000 zatwierdzonych, unikalnych wydarzeń.</p></div>
+        <button class="btn btn-primary" data-admin="coverage-refresh" ${state.busy?'disabled':''}>Przelicz bazę</button>
+      </div>
+      ${coverage?`
+        <div class="admin-coverage-summary">
+          <div><small>Wszystkie rekordy</small><strong>${coverage.total.toLocaleString('pl-PL')}</strong></div>
+          <div><small>Zatwierdzone</small><strong>${(coverage.byStatus.find(x=>x.status==='published')?.count||0).toLocaleString('pl-PL')}</strong></div>
+          <div><small>Do weryfikacji i szkice</small><strong>${(['draft','review'].reduce((n,status)=>n+(coverage.byStatus.find(x=>x.status===status)?.count||0),0)).toLocaleString('pl-PL')}</strong></div>
+          <div><small>Cel docelowy</small><strong>10 000</strong></div>
+        </div>
+        <div class="admin-coverage-progress"><div style="width:${Math.min(100,((coverage.byStatus.find(x=>x.status==='published')?.count||0)/10000)*100)}%"></div></div>
+        <p class="admin-hint">Postęp: ${((coverage.byStatus.find(x=>x.status==='published')?.count||0)/100).toFixed(2)}% celu 10 000. Zatwierdzone nie oznacza jeszcze opublikowane w trybach gry.</p>
+        <div class="admin-table-scroll"><table class="admin-table"><thead><tr><th>Dziedzina</th><th>Rekordy przypisane bezpośrednio</th><th>Cel</th><th>Pokrycie</th></tr></thead><tbody>
+        ${Object.entries(categoryTargets).map(([id,target])=>{
+          const n=coverage.byCategory.find(x=>x.categoryId===id)?.count||0;
+          const pct=Math.min(100,n/target*100);
+          return `<tr><td><strong>${esc(categoryTitle(id))}</strong></td><td>${n.toLocaleString('pl-PL')}</td>
+            <td>${target.toLocaleString('pl-PL')}</td>
+            <td><div class="admin-mini-progress"><div style="width:${pct}%"></div></div></td></tr>`;
+        }).join('')}
+        </tbody></table></div>
+        <p class="admin-hint">W podziale na dziedziny liczone są wszystkie statusy i tylko bezpośrednie przypisania do działu. Wydarzenie przypisane wyłącznie do podkategorii nie zwiększa tu licznika jej rodzica. Suma wierszy nie musi być równa liczbie unikalnych wydarzeń.</p>
+      `:'<div class="admin-empty">Kliknij „Przelicz bazę”, aby zobaczyć aktualne dane z Firestore. Pobrane kandydatury i cele nie są liczone jako zatwierdzone wydarzenia.</div>'}
+    </section>`;
+  }
+  function anniversariesView(){
+    const a=state.anniversaries;
+    const selected=a.items.filter(x=>x.selected&&!x.alreadyStored&&!x.duplicateInBatch);
+    const already=a.items.filter(x=>x.alreadyStored||x.duplicateInBatch).length;
+    return `<section class="admin-panel-card admin-anniversaries">
+      <div class="admin-toolbar"><div>
+        <span class="kicker">STUDIO ŹRÓDEŁ · WYBRANE ROCZNICE</span>
+        <h2>Wikipedia: propozycje wydarzeń</h2>
+        <p>W przeciwieństwie do surowej Wikidata, Wikipedia wybiera te rocznice redakcyjnie. Nadal musimy sprawdzić ważność dla polskiego gracza.</p>
+        </div><a class="admin-link" href="https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries" target="_blank" rel="noopener noreferrer">O źródle ↗</a>
+      </div>
+      <form id="admin-anniversaries-form" class="admin-anniversaries-form">
+        <label>Dzień startowy (MM-DD)<input type="text" name="startDay" required maxlength="5" pattern="(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])" value="${esc(a.startDay)}"></label>
+        <label>Liczba dni<select name="days">${ANNIVERSARY_DAYS.map(n=>option(n,n+' dni',n===Number(a.days))).join('')}</select></label>
+        <label>Dziedzina docelowa<select name="target">
+          ${['world','poland'].map(id=>option(id,categoryTitle(id),id===a.target)).join('')}
+        </select></label>
+        <button class="btn btn-primary" type="submit" ${state.busy?'disabled':''}>Pobierz rocznice ↗</button>
+      </form>
+      <p class="admin-hint">Najlepiej zacznij od 14 dni. 28 dni oznacza do 28 zapytań HTTP do Wikipedii, maksymalnie dwa jednocześnie. Później użyj daty następnej partii. Import do Historii Polski wymaga szczególnie uważnego wyboru — źródło ma zasięg światowy.</p>
+      ${state.busy&&a.progress?`<p class="admin-hint">Pobieranie: ${a.progress.done} / ${a.progress.total} dni.</p>`:''}
+      ${a.hasPreview?`
+        <div class="admin-wikidata-stats">
+          <span><b>${a.succeeded}/${a.requested}</b> pobranych dni</span>
+          <span><b>${a.received}</b> propozycji w źródle</span>
+          <span><b>${a.items.length}</b> poprawnych rekordów</span>
+          <span><b>${already}</b> już zapisanych / powtórzeń</span>
+          <span><b>${selected.length}</b> zaznaczonych</span>
+        </div>
+        ${a.failed.length?`<div class="admin-alert error">Nie udało się pobrać ${a.failed.length} dni. Nie zakładaj, że to kompletna partia: ${esc(a.failed.slice(0,4).map(x=>x.day+' ('+x.error+')').join(', '))}</div>`:''}
+        <div class="admin-import-actions">
+          <button class="btn btn-outline" data-admin="anniv-next" ${state.busy?'disabled':''}>Następna partia: ${esc(a.nextDay)}</button>
+          <button class="btn btn-outline" data-admin="anniv-none" ${state.busy?'disabled':''}>Odznacz wszystkie</button>
+          <button class="btn btn-primary" data-admin="anniv-import" ${!selected.length||state.busy?'disabled':''}>Zapisz ${selected.length} szkiców w Firebase</button>
+        </div>
+        <div class="admin-table-scroll"><table class="admin-table admin-anniversaries-table">
+          <thead><tr><th>Wybierz</th><th>Wydarzenie i oryginalny opis</th><th>Rok</th><th>Źródło</th><th>Ocena</th></tr></thead>
+          <tbody>${a.items.map(e=>`<tr class="${e.alreadyStored||e.duplicateInBatch?'wd-duplicate':''}">
+            <td><input type="checkbox" data-anniv-id="${esc(e.id)}" aria-label="Zaznacz ${esc(e.title)}" ${e.selected?'checked':''} ${e.alreadyStored||e.duplicateInBatch||state.busy?'disabled':''}></td>
+            <td><strong>${esc(e.title)}</strong><small>${esc(e.originalText)}</small>
+              <label class="anniv-edit">Polski tytuł (opcjonalnie teraz, obowiązkowy przed zatwierdzeniem)
+                <input type="text" data-anniv-title="${esc(e.id)}" maxlength="200" placeholder="Wpisz własny polski tytuł wydarzenia" value="${esc(e.polishTitle||'')}" ${state.busy?'disabled':''}>
+              </label>
+            </td>
+            <td>${esc(e.year)}</td>
+            <td><a class="admin-link" href="${esc(e.sourceUrl)}" target="_blank" rel="noopener noreferrer">Wikipedia ↗</a></td>
+            <td>${e.alreadyStored?'<span class="admin-state archived">Jest w bazie</span>':e.duplicateInBatch?'<span class="admin-state archived">Duplikat</span>':'<span class="admin-state review">Wymaga redakcji PL</span>'}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <p class="admin-hint">Uwaga: opisy wyświetlane w podglądzie pochodzą z angielskiej Wikipedii (CC BY-SA), nie są automatycznie kopiowane do rekordów. Zapis tworzy wyłącznie szkice z pustym opisem. Uzupełnij tytuł i opracuj własne polskie wyjaśnienie w edytorze wydarzeń.</p>
+      `:'<div class="admin-empty">Wybierz dzień i pobierz redakcyjnie wybrane rocznice. Niczego nie zapisujemy bez ręcznego wyboru.</div>'}
+    </section>`;
+  }
+
   function render(){
     const head=`<header class="admin-head"><div><span class="kicker">CHRONIKA · NARZĘDZIA REDAKCYJNE</span><h1>Centrum danych</h1><p>Jedna baza wydarzeń, wiele kategorii. Panel dostępny wyłącznie upoważnionym kontom.</p></div><div class="admin-head-actions"><button data-admin="refresh" class="btn btn-outline">Odśwież</button><button data-admin="export" class="btn btn-outline">Eksport JSON</button></div></header>`;
     const tabs=`<div class="admin-tabs">
-      ${[['events','Wydarzenia'],['categories','Kategorie'],['wikidata','Wikidata'],['import','Import / eksport']].map(([tab,name])=>`<button data-admin="tab" data-tab="${tab}" class="${state.tab===tab?'active':''}">${name}</button>`).join('')}
+      ${[['events','Wydarzenia'],['categories','Kategorie'],['anniversaries','Wybrane rocznice'],['coverage','Postęp bazy'],['wikidata','Wikidata'],['import','Import / eksport']].map(([tab,name])=>`<button data-admin="tab" data-tab="${tab}" class="${state.tab===tab?'active':''}">${name}</button>`).join('')}
     </div>`;
     const alert=`${state.error?`<div class="admin-alert error" role="alert">${esc(state.error)}</div>`:''}${state.info?`<div class="admin-alert success" role="status">${esc(state.info)}</div>`:''}`;
     let body='';
@@ -225,6 +317,8 @@ export function createAdminPanel(api) {
       <div class="admin-pages"><button class="btn btn-outline" data-admin="prev" ${state.page<=1||state.busy?'disabled':''}>← Poprzednia</button><span>Strona ${state.page}</span><button class="btn btn-outline" data-admin="next" ${!state.hasMore||state.busy?'disabled':''}>Następna →</button></div>
     </section>`;
     }
+    else if(state.tab==='anniversaries')body=anniversariesView();
+    else if(state.tab==='coverage')body=coverageView();
     else if(state.tab==='wikidata')body=wikidataView();
     else body=importView();
     return `<div id="admin-panel" class="admin-panel">${head}${tabs}${alert}${state.loaded?body:'<div class="admin-empty">Ładowanie katalogu Firebase…</div>'}</div>`;
@@ -309,6 +403,38 @@ export function createAdminPanel(api) {
         await loadEvents(true);
       });return;
     }
+
+    if(action==='coverage-refresh'){
+      await run(async()=>{state.coverage=await api.catalogCounts();state.info='Odczytano aktualne liczniki Firestore.';});return;
+    }
+    if(action==='anniv-none'){
+      state.anniversaries.items=state.anniversaries.items.map(item=>({...item,selected:false}));
+      update();return;
+    }
+    if(action==='anniv-next'){
+      state.anniversaries.startDay=state.anniversaries.nextDay;state.anniversaries.hasPreview=false;
+      state.anniversaries.items=[];update();return;
+    }
+    if(action==='anniv-import'){
+      const selected=state.anniversaries.items.filter(x=>x.selected&&!x.alreadyStored&&!x.duplicateInBatch);
+      if(!selected.length)return;
+      if(!confirm('Zapisać '+selected.length+' wydarzeń jako SZKICE do weryfikacji? Angielskie opisy nie zostaną skopiowane.'))return;
+      await run(async()=>{
+        const categoryId=state.anniversaries.target;
+        const payload=selected.map(item=>({
+          id:item.id,title:String(item.polishTitle||'').trim()||item.title,year:item.year,
+          description:'',sourceUrl:item.sourceUrl,sourceName:item.sourceName,
+          status:'draft',categoryIds:[categoryId],difficulty:2,tags:[],
+        }));
+        const result=await api.importEvents(payload);
+        const done=new Set(selected.map(x=>x.id));
+        state.anniversaries.items=state.anniversaries.items.map(e=>
+          done.has(e.id)?{...e,selected:false,alreadyStored:true}:e);
+        state.coverage=null;
+        state.info='Zapisano '+result.added+' szkiców. Pominięto '+result.skipped+' istniejących. Opisy wymagają opracowania.';
+        await loadEvents(true);
+      });return;
+    }
     if(action==='curated-preview'){
       await run(async()=>{
         const preview=await api.previewCuratedV1Cleanup();
@@ -340,10 +466,32 @@ export function createAdminPanel(api) {
     if(action==='export'){await run(exportAll,'Eksport katalogu gotowy.');return;}
   }
   async function submit(event){
-    if(!['admin-category-form','admin-event-form','admin-import-form','admin-filter-form','admin-wikidata-form'].includes(event.target.id))return;
+    if(!['admin-category-form','admin-event-form','admin-import-form','admin-filter-form','admin-wikidata-form','admin-anniversaries-form'].includes(event.target.id))return;
     event.preventDefault();
     const form=event.target,formId=form.id,fd=new FormData(form);
 
+
+    if(formId==='admin-anniversaries-form'){
+      const startDay=String(fd.get('startDay')||'01-01').trim();
+      const days=Number(fd.get('days')),target=String(fd.get('target')||'world');
+      if(!['world','poland'].includes(target))throw new Error('Nieprawidłowa dziedzina.');
+      if(!state.categories.some(c=>c.id===target))throw new Error('Nie znaleziono kategorii docelowej.');
+      state.anniversaries={startDay,days,target,items:[],received:0,rejected:0,
+        succeeded:0,failed:[],requested:days,hasPreview:false,nextDay:startDay,progress:null};
+      await run(async()=>{
+        const result=await fetchSelectedAnniversaries({startDay,days},fetch,(progress)=>{
+          state.anniversaries.progress=progress;
+          // Avoid redrawing the form while requests are in flight.
+        });
+        const existing=[];
+        for(let index=0;index<result.items.length;index+=100){
+          existing.push(...await api.existingEventIds(result.items.slice(index,index+100).map(x=>x.id)));
+        }
+        state.anniversaries={...state.anniversaries,...result,
+          items:uniqueAnniversaryCandidates(result.items,existing),hasPreview:true};
+        state.info='Pobrano '+result.items.length+' propozycji. Obejrzyj i ręcznie wybierz warte zachowania.';
+      });return;
+    }
     if(formId==='admin-wikidata-form'){
       const scope=String(fd.get('scope')||'poland');
       const startYear=Number(fd.get('startYear')),endYear=Number(fd.get('endYear'));
@@ -407,7 +555,20 @@ export function createAdminPanel(api) {
   function bind(element){root=element;
     root.onclick=event=>{click(event).catch(error=>notify(error.message,true));};
     root.onsubmit=event=>{submit(event).catch(error=>notify(error.message,true));};
+    root.oninput=event=>{
+      const input=event.target.closest('[data-anniv-title]');
+      if(!input)return;
+      const candidate=state.anniversaries.items.find(e=>e.id===input.dataset.annivTitle);
+      if(candidate)candidate.polishTitle=input.value;
+    };
     root.onchange=event=>{
+      const anniv=event.target.closest('[data-anniv-id]');
+      if(anniv){
+        if(anniv.disabled)return;
+        const record=state.anniversaries.items.find(e=>e.id===anniv.dataset.annivId);
+        if(record)record.selected=!!anniv.checked;
+        update();return;
+      }
       const input=event.target.closest('[data-wd-id]');
       if(!input||input.disabled)return;
       const record=state.wikidata.items.find(e=>e.id===input.dataset.wdId);

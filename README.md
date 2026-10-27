@@ -2,6 +2,12 @@
 
 **Osobny projekt**, niezależny od HITSTERIADY. Pierwsza grywalna wersja dla 1 gracza, gotowa do hostowania na Vercel i połączenia z *nowym* projektem Firebase. Nazwa i grafika są robocze.
 
+## Studio źródeł i liczniki Firestore (MVP 0.5)
+
+W panelu admina są dwie nowe zakładki: **Wybrane rocznice** (redakcyjnie wybierane rocznice Wikipedii, do 28 dni na partię, podgląd + ręczny wybór + zapis tylko jako szkice) oraz **Postęp bazy** (rzeczywiste agregacje Firestore według statusów i 12 głównych kategorii, cel 10 000). Źródłowe angielskie opisy są pokazywane jedynie w podglądzie, nie kopiowane do własnej bazy. Polski opis trzeba samodzielnie opracować lub przygotować w późniejszym systemie redakcyjnym. Szczegóły: [Instrukcja admina](docs/ADMIN_PANEL.md#wybrane-rocznice-wikipedii--pierwsza-partia-do-produkcji-10-000-wydarzeń).
+
+**To infrastruktura produkcji treści, a nie 10 000 gotowych pytań.** Nie zmienia reguł Firestore ani rozgrywki.
+
 ## Importer Wikidata (MVP 0.4 — pierwsze źródło)
 
 W **Panel admina → Wikidata** można pobierać partie 25, 50 lub 100 propozycji dla Historii Polski, Historii świata i Nauki w wybranym przedziale lat. Podgląd pokazuje opisy, lata, źródła, braki i istniejące ID w Firestore. Admin zaznacza rekordy i zapisuje je **wyłącznie jako szkice** do weryfikacji — nic nie trafia automatycznie do gry.

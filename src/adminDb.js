@@ -127,6 +127,26 @@ export function createAdminDb(dbSdk, db, auth) {
     await batch.commit();
     return SEED_CATEGORIES.length;
   }
+  async function catalogCounts(){
+    await requireAdmin();
+    if(typeof dbSdk.getCountFromServer!=='function')
+      throw new Error('Brak wsparcia dla agregacji Firestore.');
+    const count=async constraints=>{
+      const q=dbSdk.query(events,...constraints);
+      return (await dbSdk.getCountFromServer(q)).data().count;
+    };
+    const [total,byStatus,byCategory]=await Promise.all([
+      count([]),
+      Promise.all(['draft','review','published','archived'].map(async status=>({
+        status,count:await count([dbSdk.where('status','==',status)]),
+      }))),
+      Promise.all(['cinema','television','poland','world','sport','football','games','science','technology','literature','geography','culture']
+        .map(async categoryId=>({
+          categoryId,count:await count([dbSdk.where('categoryIds','array-contains',categoryId)]),
+        }))),
+    ]);
+    return {total,byStatus,byCategory,calculatedAt:Date.now()};
+  }
   async function existingEventIds(ids){
     await requireAdmin();
     if(!Array.isArray(ids)||ids.length>150)throw new Error('Limit sprawdzenia to 150 wydarzeń.');
@@ -182,5 +202,5 @@ export function createAdminDb(dbSdk, db, auth) {
     }));
     return importEvents(docs);
   }
-  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds,previewCuratedV1Cleanup,cleanupCuratedV1Tags};
+  return {canEdit,listCategories,listEvents,saveCategory,saveEvent,importCategories,importEvents,importSampleEvents,existingEventIds,catalogCounts,previewCuratedV1Cleanup,cleanupCuratedV1Tags};
 }
