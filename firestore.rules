@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Prototyp: każdy może czytać treści lokalne dostarczone z aplikacją.
+    // Użytkownik zapisuje wyłącznie WŁASNY progres (anonimowy Firebase Auth).
+    // UWAGA: przy rankingach i online multiplayer wynik NIE może być
+    // zatwierdzany na podstawie danych z klienta. Dodamy Cloud Functions.
+    match /chronikaProgress/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['stages', 'xp', 'totalStars', 'lastUpdated'])
+        && request.resource.data.stages is map
+        && request.resource.data.xp is int
+        && request.resource.data.xp >= 0
+        && request.resource.data.totalStars is int
+        && request.resource.data.totalStars >= 0;
+      allow delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
